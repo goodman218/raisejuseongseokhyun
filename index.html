@@ -69,8 +69,8 @@
 
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; z-index: 100; }
         #jail-overlay { background: rgba(0,0,0,0.85); color: red; flex-direction: column; font-weight: bold; font-size: 2em; text-align: center; }
-        #guide-overlay { background: rgba(0,0,0,0.6); }
-        .guide-box { background: white; width: 85%; padding: 20px; border-radius: 10px; max-height: 80%; overflow-y: auto; }
+        #guide-overlay, #mission-overlay { background: rgba(0,0,0,0.7); }
+        .guide-box { background: white; width: 85%; padding: 20px; border-radius: 10px; max-height: 80%; overflow-y: auto; text-align: center; }
     </style>
 </head>
 <body>
@@ -83,16 +83,29 @@
     </div>
 
     <div id="guide-overlay" class="overlay">
-        <div class="guide-box">
-            <h2 style="margin-top:0;">📜 게임 가이드</h2>
+        <div class="guide-box" style="text-align: left;">
+            <h2 style="margin-top:0; text-align:center;">📜 게임 가이드</h2>
             <ul style="padding-left: 20px; font-size: 0.85em; line-height: 1.6;">
                 <li><b>왼쪽/오른쪽 터치:</b> 캐릭터를 눌러 골드를 벌어보세요.</li>
-                <li><b>업그레이드:</b> 클릭 골드와 초당 월세를 높입니다.</li>
+                <li><b>업그레이드:</b> 클릭 골드와 초당 골드를 높입니다.</li>
                 <li><b>주식:</b> 국장/미장 타이밍을 맞춰 전재산을 불려보세요.</li>
                 <li><b>코인:</b> 레버리지는 기회이자 위기입니다. 청산을 조심하세요!</li>
                 <li><b>부동산:</b> 서울 곳곳에 건물을 사서 영구적인 월세를 받으세요.</li>
             </ul>
             <button class="buy-btn" style="width: 100%; background: #3498db;" onclick="toggleGuide(false)">확인</button>
+        </div>
+    </div>
+
+    <div id="mission-overlay" class="overlay">
+        <div class="guide-box">
+            <h2 style="margin-top:0; color: #e74c3c;">🏆 히든 미션 🏆</h2>
+            <p style="font-size: 1.1em; line-height: 1.6; font-weight: bold; color: #2c3e50;">
+                보유 골드 1조 달성하고<br>
+                인증샷 찍어서 인스타<br>
+                <span style="color: #3498db;">@chlwntjddl</span> 로 디엠 보내면<br>
+                진짜 1조드림 ㅋㅋㅅㄱ
+            </p>
+            <button class="buy-btn" style="width: 100%; font-size: 1.1em; padding: 12px;" onclick="closeMission()">도전하기</button>
         </div>
     </div>
 
@@ -287,7 +300,7 @@
         { id: 'jongno', name: '종로구', cost: 120000000, rent: 300000, owned: false },
         { id: 'jung', name: '중구', cost: 150000000, rent: 400000, owned: false },
         { id: 'gwangjin', name: '광진구', cost: 200000000, rent: 550000, owned: false },
-        { id: 'gangdong', name: '강동구', cost: 220000000, rent: 600000, owned: false }, // 광진구 급으로 상향
+        { id: 'gangdong', name: '강동구', cost: 220000000, rent: 600000, owned: false }, 
         { id: 'seongdong', name: '성동구', cost: 300000000, rent: 800000, owned: false },
         { id: 'yeongdeungpo', name: '영등포구', cost: 500000000, rent: 1500000, owned: false },
         { id: 'songpa', name: '송파구', cost: 800000000, rent: 2500000, owned: false },
@@ -300,8 +313,18 @@
 
     function format(num) { return Math.floor(num).toLocaleString('ko-KR'); }
     function updateUI() { if(gameData.isJailed) return; document.getElementById('currency-display').innerText = format(gameData.currency); document.getElementById('gps-display').innerText = format(gameData.autoPower); document.getElementById('cpc-display').innerText = format(gameData.clickPower); upgrades.forEach(u => { const btn = document.getElementById(`btn-${u.id}`); if(btn) btn.disabled = gameData.currency < Math.floor(u.baseCost * Math.pow(1.15, u.level)); }); }
+    
     function showPrologue() { initAudio(); document.getElementById('start-screen').classList.remove('active'); document.getElementById('prologue-screen').classList.add('active'); }
-    function startGame() { document.getElementById('prologue-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active'); renderUpgrades(); renderMarkets(); updateUI(); }
+    
+    // 게임 시작 시 미션 팝업 띄우기
+    function startGame() { 
+        document.getElementById('prologue-screen').classList.remove('active'); 
+        document.getElementById('game-screen').classList.add('active'); 
+        renderUpgrades(); renderMarkets(); updateUI(); 
+        document.getElementById('mission-overlay').style.display = 'flex';
+    }
+    
+    function closeMission() { document.getElementById('mission-overlay').style.display = 'none'; }
     function toggleGuide(s) { document.getElementById('guide-overlay').style.display = s ? 'flex' : 'none'; }
     function switchTab(t) { document.querySelectorAll('.tab').forEach(el => el.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); event.target.classList.add('active'); document.getElementById('tab-' + t).classList.add('active'); }
 
