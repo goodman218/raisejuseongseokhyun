@@ -35,7 +35,7 @@
         .float-wrapper { display: flex; width: 100%; height: 100%; justify-content: center; align-items: center; animation: floatIdle 3s ease-in-out infinite; }
         @keyframes floatIdle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         
-        .floating-text { position: absolute; color: #e67e22; font-weight: bold; font-size: 1.5em; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 20; }
+        .floating-text { position: absolute; font-weight: bold; font-size: 1.5em; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 20; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
 
         /* --- 하단 메뉴 존 --- */
@@ -60,11 +60,12 @@
         .lever-btn { padding: 4px 8px; font-size: 0.7em; background: #95a5a6; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 3px; }
         .lever-btn.active { background: #2c3e50; font-weight: bold; }
 
-        #map-container { width: 100%; height: 180px; background: #dfe6e9; border-radius: 8px; margin-bottom: 10px; position: relative; }
-        .district { fill: #b2bec3; stroke: white; stroke-width: 1.5; cursor: pointer; transition: 0.2s; }
-        .district.owned { fill: #f1c40f; stroke: #d35400; }
+        #map-container { width: 100%; height: 210px; background: #dfe6e9; border-radius: 8px; margin-bottom: 10px; position: relative; }
+        .district { fill: #b2bec3; stroke: #fff; stroke-width: 1.5; cursor: pointer; transition: 0.2s; }
+        .district.owned { fill: #f1c40f; stroke: #e67e22; }
         .district.selected { stroke: #e74c3c; stroke-width: 3; }
         .river { fill: #74b9ff; }
+        .map-text { font-size: 9px; font-weight: bold; fill: #2d3436; pointer-events: none; text-anchor: middle; }
 
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; z-index: 100; }
         #jail-overlay { background: rgba(0,0,0,0.85); color: red; flex-direction: column; font-weight: bold; font-size: 2em; text-align: center; }
@@ -146,16 +147,59 @@
             <div id="tab-estate" class="tab-content">
                 <div id="map-container">
                     <svg viewBox="0 0 400 200" style="width:100%; height:100%;">
-                        <rect class="river" x="0" y="90" width="400" height="20" />
-                        <path class="district" id="dist-nowon" d="M300,20 L350,20 L360,60 L310,70 Z" onclick="selectDistrict('nowon')" />
-                        <path class="district" id="dist-mapo" d="M80,60 L130,60 L120,90 L70,90 Z" onclick="selectDistrict('mapo')" />
-                        <path class="district" id="dist-yongsan" d="M160,70 L220,70 L210,100 L170,100 Z" onclick="selectDistrict('yongsan')" />
-                        <path class="district" id="dist-seongdong" d="M230,60 L280,60 L270,90 L220,90 Z" onclick="selectDistrict('seongdong')" />
-                        <path class="district" id="dist-gwangjin" d="M290,65 L340,65 L330,95 L280,95 Z" onclick="selectDistrict('gwangjin')" />
-                        <path class="district" id="dist-gangseo" d="M20,110 L80,110 L90,150 L30,150 Z" onclick="selectDistrict('gangseo')" />
-                        <path class="district" id="dist-seocho" d="M150,115 L210,115 L220,165 L160,165 Z" onclick="selectDistrict('seocho')" />
-                        <path class="district" id="dist-gangnam" d="M220,115 L280,115 L290,165 L230,165 Z" onclick="selectDistrict('gangnam')" />
-                        <path class="district" id="dist-gangdong" d="M300,110 L360,110 L370,140 L310,140 Z" onclick="selectDistrict('gangdong')" />
+                        <rect class="river" x="0" y="100" width="400" height="15" />
+                        
+                        <rect class="district" id="dist-eunpyeong" x="25" y="20" width="45" height="35" rx="3" onclick="selectDistrict('eunpyeong')" />
+                        <text class="map-text" x="47.5" y="41">은평</text>
+                        <rect class="district" id="dist-jongno" x="75" y="25" width="50" height="35" rx="3" onclick="selectDistrict('jongno')" />
+                        <text class="map-text" x="100" y="46">종로</text>
+                        <rect class="district" id="dist-gangbuk" x="130" y="10" width="40" height="25" rx="3" onclick="selectDistrict('gangbuk')" />
+                        <text class="map-text" x="150" y="26">강북</text>
+                        <rect class="district" id="dist-dobong" x="175" y="5" width="40" height="25" rx="3" onclick="selectDistrict('dobong')" />
+                        <text class="map-text" x="195" y="21">도봉</text>
+                        <rect class="district" id="dist-nowon" x="220" y="15" width="50" height="35" rx="3" onclick="selectDistrict('nowon')" />
+                        <text class="map-text" x="245" y="36">노원</text>
+                        <rect class="district" id="dist-seongbuk" x="130" y="40" width="45" height="30" rx="3" onclick="selectDistrict('seongbuk')" />
+                        <text class="map-text" x="152.5" y="58">성북</text>
+                        <rect class="district" id="dist-dongdaemun" x="180" y="35" width="45" height="30" rx="3" onclick="selectDistrict('dongdaemun')" />
+                        <text class="map-text" x="202.5" y="53">동대문</text>
+                        <rect class="district" id="dist-jungnang" x="230" y="55" width="45" height="35" rx="3" onclick="selectDistrict('jungnang')" />
+                        <text class="map-text" x="252.5" y="76">중랑</text>
+                        <rect class="district" id="dist-mapo" x="10" y="60" width="40" height="35" rx="3" onclick="selectDistrict('mapo')" />
+                        <text class="map-text" x="30" y="81">마포</text>
+                        <rect class="district" id="dist-seodaemun" x="55" y="60" width="45" height="30" rx="3" onclick="selectDistrict('seodaemun')" />
+                        <text class="map-text" x="77.5" y="78">서대문</text>
+                        <rect class="district" id="dist-jung" x="105" y="65" width="40" height="25" rx="3" onclick="selectDistrict('jung')" />
+                        <text class="map-text" x="125" y="81">중구</text>
+                        <rect class="district" id="dist-yongsan" x="150" y="70" width="45" height="25" rx="3" onclick="selectDistrict('yongsan')" />
+                        <text class="map-text" x="172.5" y="86">용산</text>
+                        <rect class="district" id="dist-seongdong" x="200" y="70" width="45" height="25" rx="3" onclick="selectDistrict('seongdong')" />
+                        <text class="map-text" x="222.5" y="86">성동</text>
+                        <rect class="district" id="dist-gwangjin" x="250" y="70" width="45" height="25" rx="3" onclick="selectDistrict('gwangjin')" />
+                        <text class="map-text" x="272.5" y="86">광진</text>
+
+                        <rect class="district" id="dist-gangseo" x="10" y="120" width="55" height="40" rx="3" onclick="selectDistrict('gangseo')" />
+                        <text class="map-text" x="37.5" y="144">강서</text>
+                        <rect class="district" id="dist-yangcheon" x="70" y="125" width="40" height="30" rx="3" onclick="selectDistrict('yangcheon')" />
+                        <text class="map-text" x="90" y="144">양천</text>
+                        <rect class="district" id="dist-yeongdeungpo" x="115" y="120" width="45" height="35" rx="3" onclick="selectDistrict('yeongdeungpo')" />
+                        <text class="map-text" x="137.5" y="141">영등포</text>
+                        <rect class="district" id="dist-dongjak" x="165" y="120" width="40" height="30" rx="3" onclick="selectDistrict('dongjak')" />
+                        <text class="map-text" x="185" y="139">동작</text>
+                        <rect class="district" id="dist-seocho" x="210" y="120" width="45" height="55" rx="3" onclick="selectDistrict('seocho')" />
+                        <text class="map-text" x="232.5" y="151">서초</text>
+                        <rect class="district" id="dist-gangnam" x="260" y="120" width="45" height="55" rx="3" onclick="selectDistrict('gangnam')" />
+                        <text class="map-text" x="282.5" y="151">강남</text>
+                        <rect class="district" id="dist-songpa" x="310" y="120" width="45" height="50" rx="3" onclick="selectDistrict('songpa')" />
+                        <text class="map-text" x="332.5" y="149">송파</text>
+                        <rect class="district" id="dist-gangdong" x="360" y="115" width="35" height="40" rx="3" onclick="selectDistrict('gangdong')" />
+                        <text class="map-text" x="377.5" y="139">강동</text>
+                        <rect class="district" id="dist-guro" x="40" y="165" width="55" height="30" rx="3" onclick="selectDistrict('guro')" />
+                        <text class="map-text" x="67.5" y="184">구로</text>
+                        <rect class="district" id="dist-geumcheon" x="100" y="160" width="40" height="35" rx="3" onclick="selectDistrict('geumcheon')" />
+                        <text class="map-text" x="120" y="181">금천</text>
+                        <rect class="district" id="dist-gwanak" x="145" y="155" width="55" height="40" rx="3" onclick="selectDistrict('gwanak')" />
+                        <text class="map-text" x="172.5" y="179">관악</text>
                     </svg>
                 </div>
                 <div id="district-info" class="card" style="text-align:center; padding: 15px;">
@@ -167,11 +211,11 @@
                 <div class="card" style="border: 2px solid #e74c3c;">
                     <h3>🏦 은행 습격 <span style="font-size:0.7em; color:#e74c3c;">(성공률 30%)</span></h3>
                     <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">전재산 2.5배 vs 30초 독방</p>
-                    <button class="buy-btn" style="background: #c0392b; width: 100%;" onclick="robBank()">습격 시작</button>
+                    <button class="buy-btn" style="background: #c0392b; width: 100%;" onclick="robBank()">과감하게 습격하기</button>
                 </div>
                 <div class="card" style="border: 2px solid #2ecc71;">
                     <h3 style="display:flex; justify-content:space-between;">
-                        <span>🎟️ 기묘한 로또 (1%)</span>
+                        <span>🎟️ 로또 (1%)</span>
                         <span id="lotto-timer" style="color:#e67e22; font-size:0.8em;">60초 남음</span>
                     </h3>
                     <p style="font-size: 0.75em; color: #666; margin-bottom: 10px;">구매 로또: <span id="lotto-status" style="font-weight:bold; color:#2c3e50;">없음</span></p>
@@ -223,8 +267,33 @@
         crypto: [{ id:'btc', name:'비토코인', price:50000, invested:0, lever:1, change:0 }, { id:'doge', name:'도자코인', price:50000, invested:0, lever:1, change:0 }, { id:'eth', name:'이더려움', price:50000, invested:0, lever:1, change:0 }]
     };
 
+    // 서울 25개 구 데이터
     let realEstate = [
-        { id:'nowon', name:'노원구', cost:10000000, rent:20000, owned:false }, { id:'gangseo', name:'강서구', cost:30000000, rent:70000, owned:false }, { id:'gangdong', name:'강동구', cost:80000000, rent:200000, owned:false }, { id:'gwangjin', name:'광진구', cost:200000000, rent:550000, owned:false }, { id:'mapo', name:'마포구', cost:500000000, rent:1500000, owned:false }, { id:'seongdong', name:'성동구', cost:1000000000, rent:3500000, owned:false }, { id:'yongsan', name:'용산구', cost:3000000000, rent:12000000, owned:false }, { id:'seocho', name:'서초구', cost:8000000000, rent:35000000, owned:false }, { id:'gangnam', name:'강남구', cost:20000000000, rent:100000000, owned:false }
+        { id: 'dobong', name: '도봉구', cost: 5000000, rent: 10000, owned: false },
+        { id: 'gangbuk', name: '강북구', cost: 8000000, rent: 15000, owned: false },
+        { id: 'jungnang', name: '중랑구', cost: 10000000, rent: 20000, owned: false },
+        { id: 'nowon', name: '노원구', cost: 12000000, rent: 25000, owned: false },
+        { id: 'eunpyeong', name: '은평구', cost: 15000000, rent: 30000, owned: false },
+        { id: 'geumcheon', name: '금천구', cost: 18000000, rent: 40000, owned: false },
+        { id: 'guro', name: '구로구', cost: 22000000, rent: 50000, owned: false },
+        { id: 'gwanak', name: '관악구', cost: 25000000, rent: 60000, owned: false },
+        { id: 'seodaemun', name: '서대문구', cost: 30000000, rent: 70000, owned: false },
+        { id: 'gangseo', name: '강서구', cost: 35000000, rent: 85000, owned: false },
+        { id: 'seongbuk', name: '성북구', cost: 40000000, rent: 100000, owned: false },
+        { id: 'dongdaemun', name: '동대문구', cost: 50000000, rent: 120000, owned: false },
+        { id: 'yangcheon', name: '양천구', cost: 60000000, rent: 150000, owned: false },
+        { id: 'dongjak', name: '동작구', cost: 80000000, rent: 200000, owned: false },
+        { id: 'mapo', name: '마포구', cost: 100000000, rent: 250000, owned: false },
+        { id: 'jongno', name: '종로구', cost: 120000000, rent: 300000, owned: false },
+        { id: 'jung', name: '중구', cost: 150000000, rent: 400000, owned: false },
+        { id: 'gwangjin', name: '광진구', cost: 200000000, rent: 550000, owned: false },
+        { id: 'gangdong', name: '강동구', cost: 220000000, rent: 600000, owned: false }, // 광진구 급으로 상향
+        { id: 'seongdong', name: '성동구', cost: 300000000, rent: 800000, owned: false },
+        { id: 'yeongdeungpo', name: '영등포구', cost: 500000000, rent: 1500000, owned: false },
+        { id: 'songpa', name: '송파구', cost: 800000000, rent: 2500000, owned: false },
+        { id: 'yongsan', name: '용산구', cost: 1500000000, rent: 5000000, owned: false },
+        { id: 'seocho', name: '서초구', cost: 5000000000, rent: 18000000, owned: false },
+        { id: 'gangnam', name: '강남구', cost: 10000000000, rent: 40000000, owned: false }
     ];
 
     let lottoTime = 60; let myLotto = null;
@@ -236,10 +305,11 @@
     function toggleGuide(s) { document.getElementById('guide-overlay').style.display = s ? 'flex' : 'none'; }
     function switchTab(t) { document.querySelectorAll('.tab').forEach(el => el.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); event.target.classList.add('active'); document.getElementById('tab-' + t).classList.add('active'); }
 
+    // 두 캐릭터 모두 노란색 텍스트(#f1c40f) 통일
     function processClick(e, color) { if(gameData.isJailed) return; let x = e.clientX || e.touches[0].clientX; let y = e.clientY || e.touches[0].clientY; playSfx('coin'); gameData.currency += gameData.clickPower; const t = document.createElement('div'); t.className = 'floating-text'; t.innerText = `+${format(gameData.clickPower)}`; t.style.left = `${x-20}px`; t.style.top = `${y-20}px`; t.style.color = color; document.body.appendChild(t); setTimeout(() => t.remove(), 800); updateUI(); }
-    function pressJuseong(e) { if(e.type==='touchstart')e.preventDefault(); if(!gameData.isJailed){ processClick(e, '#e74c3c'); document.getElementById('juseong-img').src = 'juseong_down.png'; } }
+    function pressJuseong(e) { if(e.type==='touchstart')e.preventDefault(); if(!gameData.isJailed){ processClick(e, '#f1c40f'); document.getElementById('juseong-img').src = 'juseong_down.png'; } }
     function releaseJuseong() { document.getElementById('juseong-img').src = 'juseong_up.png'; }
-    function tapSeokhyun(e) { if(e.type==='touchstart')e.preventDefault(); if(!gameData.isJailed){ processClick(e, '#3498db'); seokDeg += 360; document.getElementById('seokhyun-img').style.transform = `scale(1.6) rotate(${seokDeg}deg)`; } }
+    function tapSeokhyun(e) { if(e.type==='touchstart')e.preventDefault(); if(!gameData.isJailed){ processClick(e, '#f1c40f'); seokDeg += 360; document.getElementById('seokhyun-img').style.transform = `scale(1.6) rotate(${seokDeg}deg)`; } }
 
     function buyUpgrade(id) { const u = upgrades.find(x => x.id === id); let cost = Math.floor(u.baseCost * Math.pow(1.15, u.level)); if (gameData.currency >= cost) { gameData.currency -= cost; u.level++; if (u.target === 'click') gameData.clickPower += u.power; else gameData.autoPower += u.power; document.getElementById(`btn-${u.id}`).innerText = `${format(Math.floor(u.baseCost * Math.pow(1.15, u.level)))}G`; document.getElementById(`lv-${u.id}`).innerText = `Lv.${u.level}`; updateUI(); } }
     function renderUpgrades() { const l = document.getElementById('tab-upgrade'); l.innerHTML = '<div class="category-title">주성이 키우기 (클릭 골드 UP)</div>'; upgrades.filter(u=>u.category==='juseong').forEach(u => l.innerHTML += createUpgHTML(u)); l.innerHTML += '<div class="category-title">석현이 키우기 (초당 골드 UP)</div>'; upgrades.filter(u=>u.category==='seokhyun').forEach(u => l.innerHTML += createUpgHTML(u)); }
@@ -248,14 +318,14 @@
     function renderMarkets() { const k = document.getElementById('market-k'); k.innerHTML = ''; markets.k.forEach(s => k.innerHTML += createStockHTML(s, 'k')); const u = document.getElementById('market-us'); u.innerHTML = ''; markets.us.forEach(s => u.innerHTML += createStockHTML(s, 'us')); const c = document.getElementById('market-crypto'); c.innerHTML = ''; markets.crypto.forEach(s => c.innerHTML += createCryptoHTML(s)); }
     function createStockHTML(s, m) { let cls = s.change >= 0 ? 'price-up' : 'price-down'; return `<div class="card market-item"><div class="item-row"><b>${s.name}</b> <span class="stock-price ${cls}">${format(s.price)} ${s.change>=0?'▲':'▼'} ${Math.abs(s.change)}%</span></div><div style="font-size:0.8em;margin-bottom:5px;">보유: ${format(s.shares)}주 (${format(s.shares*s.price)}G)</div><div style="display:flex;gap:5px;"><input type="number" id="in-${s.id}" class="stock-input" placeholder="골드"><button class="buy-btn" onclick="tradeStock('${m}','${s.id}',true)">매수</button><button class="buy-btn" style="background:#e74c3c" onclick="tradeStock('${m}','${s.id}',false)">매도</button></div></div>`; }
     function createCryptoHTML(c) { let cls = c.change >= 0 ? 'price-up' : 'price-down'; return `<div class="card market-item"><div class="item-row"><b>${c.name}</b> <span class="stock-price ${cls}">${format(c.price)} ${c.change>=0?'▲':'▼'} ${Math.abs(c.change)}%</span></div><div style="font-size:0.8em;margin:5px 0;">배수: <button class="lever-btn ${c.lever===1?'active':''}" onclick="setLever('${c.id}',1)">1x</button><button class="lever-btn ${c.lever===3?'active':''}" onclick="setLever('${c.id}',3)">3x</button><button class="lever-btn ${c.lever===5?'active':''}" onclick="setLever('${c.id}',5)">5x</button></div><div style="font-size:0.8em;margin-bottom:5px;">투자: <span class="price-up">${format(c.invested)}G</span></div><div style="display:flex;gap:5px;"><input type="number" id="in-${c.id}" class="stock-input" placeholder="골드"><button class="buy-btn" onclick="tradeCrypto('${c.id}',true)">베팅</button><button class="buy-btn" style="background:#e74c3c" onclick="tradeCrypto('${c.id}',false)">익절</button></div></div>`; }
-    setInterval(() => { markets.k.forEach(s => { let ch = (Math.random()*0.8)-0.4; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); markets.us.forEach(s => { let ch = (Math.random()*1.6)-0.8; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); markets.crypto.forEach(c => { let bCh = (Math.random()*1.5)-0.5; let lCh = bCh*c.lever; if(c.invested > 0){ c.invested = Math.floor(c.invested*(1+lCh)); if(c.invested <= 0){ c.invested=0; alert(`[청산] ${c.name} 투자금이 증발했습니다.`); } } c.price = Math.max(10, Math.floor(c.price*(1+bCh))); c.change = Math.floor(lCh*100); }); if(document.getElementById('tab-market').classList.contains('active')) renderMarkets(); }, 5000);
+    setInterval(() => { markets.k.forEach(s => { let ch = (Math.random()*0.8)-0.4; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); markets.us.forEach(s => { let ch = (Math.random()*1.6)-0.8; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); markets.crypto.forEach(c => { let bCh = (Math.random()*1.5)-0.5; let lCh = bCh*c.lever; if(c.invested > 0){ c.invested = Math.floor(c.invested*(1+lCh)); if(c.invested <= 0){ c.invested=0; alert(`🚨 [청산] ${c.name} 투자금이 증발했습니다.`); } } c.price = Math.max(10, Math.floor(c.price*(1+bCh))); c.change = Math.floor(lCh*100); }); if(document.getElementById('tab-market').classList.contains('active')) renderMarkets(); }, 5000);
     function tradeStock(m, id, b) { const s = markets[m].find(x => x.id === id); if(b){ let a = parseInt(document.getElementById(`in-${id}`).value); if(a > 0 && gameData.currency >= a){ gameData.currency -= a; s.shares += a/s.price; } } else { gameData.currency += Math.floor(s.shares*s.price); s.shares = 0; } renderMarkets(); updateUI(); }
     function setLever(id, l) { const c = markets.crypto.find(x => x.id === id); if(c.invested > 0) return; c.lever = l; renderMarkets(); }
     function tradeCrypto(id, b) { const c = markets.crypto.find(x => x.id === id); if(b){ let a = parseInt(document.getElementById(`in-${id}`).value); if(a > 0 && gameData.currency >= a){ gameData.currency -= a; c.invested += a; } } else { gameData.currency += c.invested; c.invested = 0; } renderMarkets(); updateUI(); }
 
-    function selectDistrict(id) { const d = realEstate.find(x => x.id === id); document.querySelectorAll('.district').forEach(el => el.classList.remove('selected')); document.getElementById(`dist-${id}`).classList.add('selected'); document.getElementById('district-info').innerHTML = `<h3 style="margin:0 0 5px 0;">${d.name} ${d.owned?'✅':''}</h3><p style="font-size:0.85em;margin:5px 0;">매매가: ${format(d.cost)}G | 월세: +${format(d.rent)}G</p><button class="buy-btn" style="width:100%" onclick="buyEstate('${id}')" ${gameData.currency < d.cost || d.owned ? 'disabled' : ''}>${d.owned?'소유중':'매수'}</button>`; }
+    function selectDistrict(id) { const d = realEstate.find(x => x.id === id); document.querySelectorAll('.district').forEach(el => el.classList.remove('selected')); document.getElementById(`dist-${id}`).classList.add('selected'); document.getElementById('district-info').innerHTML = `<h3 style="margin:0 0 5px 0;">${d.name} ${d.owned?'✅':''}</h3><p style="font-size:0.85em;margin:5px 0;">매매가: ${format(d.cost)}G | 월세: <span style="color:#e74c3c;font-weight:bold;">+${format(d.rent)}G</span></p><button class="buy-btn" style="width:100%" onclick="buyEstate('${id}')" ${gameData.currency < d.cost || d.owned ? 'disabled' : ''}>${d.owned?'소유중':'건물 매수하기'}</button>`; }
     function buyEstate(id) { const d = realEstate.find(x => x.id === id); if(gameData.currency >= d.cost && !d.owned){ gameData.currency -= d.cost; d.owned = true; gameData.autoPower += d.rent; document.getElementById(`dist-${id}`).classList.add('owned'); playSfx('win'); selectDistrict(id); updateUI(); } }
-    setInterval(() => { realEstate.forEach(e => { e.cost = Math.floor(e.cost * (1 + (Math.random()*0.15 - 0.05))); }); }, 10000);
+    setInterval(() => { realEstate.forEach(e => { e.cost = Math.floor(e.cost * (1 + (Math.random()*0.15 - 0.05))); }); if(document.getElementById('tab-estate').classList.contains('active')){ let sel = document.querySelector('.district.selected'); if(sel) selectDistrict(sel.id.replace('dist-','')); } }, 10000);
 
     function robBank() { if(confirm("은행 습격? 성공30%")){ if(Math.random()<0.3){ gameData.currency += gameData.currency*1.5; playSfx('win'); alert("대성공!"); } else { playSfx('siren'); gameData.isJailed=true; document.getElementById('jail-overlay').style.display='flex'; let t=30; let i=setInterval(()=>{ t--; document.getElementById('jail-timer').innerText=`${t}초 남음`; if(t<=0){ clearInterval(i); gameData.isJailed=false; document.getElementById('jail-overlay').style.display='none'; } },1000); } updateUI(); } }
     function buyLotto(c, n) { if(myLotto) return; if(gameData.currency >= c){ gameData.currency -= c; myLotto = { c, n }; document.getElementById('lotto-status').innerText = `${n} 로또 대기중...`; updateUI(); } }
