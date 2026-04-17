@@ -5,119 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
     <title>주성이와 석현이 키우기: 완전판</title>
     <style>
-        :root {
-            --aura-color: rgba(255, 50, 50, 0.6);
-        }
-        body { margin: 0; padding: 0; background-color: #222; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        #game-container { width: 100%; max-width: 400px; height: 100vh; max-height: 800px; background-color: #fff; box-shadow: 0 0 30px rgba(0,0,0,0.7); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        body { margin: 0; padding: 0; background-color: #333; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        #game-container { width: 100%; max-width: 400px; height: 100vh; max-height: 800px; background-color: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.5); position: relative; overflow: hidden; display: flex; flex-direction: column; }
 
-        /* --- Screens --- */
+        /* --- 화면 전환 --- */
         .screen { display: none; width: 100%; height: 100%; flex-direction: column; }
         .screen.active { display: flex; }
-        #start-screen { justify-content: center; align-items: center; background: linear-gradient(135deg, #2c3e50, #000); color: #ecf0f1; text-align: center; }
-        .start-btn { background-color: #e74c3c; color: white; border: none; padding: 15px 50px; font-size: 1.5em; font-weight: bold; border-radius: 50px; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 15px rgba(231,76,60,0.4); }
+        #start-screen { justify-content: center; align-items: center; background-color: #2c3e50; color: #ecf0f1; text-align: center; }
+        #start-screen h1 { font-size: 2.2em; margin-bottom: 50px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .start-btn { background-color: #e74c3c; color: white; border: none; padding: 15px 40px; font-size: 1.3em; font-weight: bold; border-radius: 30px; cursor: pointer; transition: 0.1s; }
         .start-btn:active { transform: scale(0.95); }
-        #prologue-screen { justify-content: center; align-items: center; background-color: #000; color: white; padding: 30px; text-align: center; }
-        .prologue-text { font-size: 1.3em; line-height: 1.8; opacity: 0; animation: fadeIn 3s forwards; }
+        #prologue-screen { justify-content: center; align-items: center; background-color: #111; color: white; padding: 30px; text-align: center; }
+        .prologue-text { font-size: 1.3em; line-height: 1.8; opacity: 0; animation: fadeIn 3s forwards; margin-bottom: 30px; }
+        .skip-btn { padding: 10px 25px; background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5); border-radius: 5px; cursor: pointer; opacity: 0; animation: fadeIn 3s forwards; animation-delay: 1s; }
         @keyframes fadeIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
 
-        /* --- Status Bar --- */
-        #status-bar { background-color: #1a252f; color: #bdc3c7; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75em; z-index: 10; border-bottom: 2px solid #34495e; }
-        .stat-val { display: block; color: #f1c40f; font-weight: bold; font-size: 1.4em; margin-top: 3px; }
-        .left-stat .stat-val { font-size: 1.7em; color: #2ecc71; }
-        #guide-btn { background: #e74c3c; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; cursor: pointer; font-size: 14px; margin-left: 10px; }
+        /* --- 본 게임 상단 --- */
+        #status-bar { background-color: #2c3e50; color: #bdc3c7; padding: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 0.8em; z-index: 10; position: relative; }
+        .stat-val { display: block; color: #f1c40f; font-weight: bold; font-size: 1.3em; margin-top: 5px; }
+        .left-stat .stat-val { font-size: 1.8em; }
+        .right-stats { display: flex; gap: 12px; text-align: right; }
+        #guide-btn { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; width: 25px; height: 25px; border-radius: 50%; text-align: center; line-height: 25px; font-weight: bold; cursor: pointer; z-index: 20; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
 
-        /* --- Action Zone --- */
-        #action-zone { flex: 1; background-color: #f1f3f5; display: flex; position: relative; overflow: hidden; border-bottom: 2px solid #ddd; }
-        .click-area { flex: 1; height: 100%; display: flex; justify-content: center; align-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; z-index: 5; }
+        /* --- 액션 영역 --- */
+        #action-zone { flex: 1; background-color: #ecf0f1; display: flex; position: relative; overflow: hidden; }
+        .click-area { flex: 1; height: 100%; display: flex; justify-content: center; align-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .character { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; pointer-events: none; }
-        .character img { width: 100%; height: 75%; object-fit: contain; transform: scale(1.7); transform-origin: center center; }
-        .float-wrapper { animation: floatIdle 3s ease-in-out infinite; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
-        @keyframes floatIdle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        .floating-text { position: absolute; font-weight: 900; font-size: 1.6em; pointer-events: none; animation: floatUp 0.7s forwards; z-index: 20; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-60px); } }
+        .character img { width: 100%; height: 60%; object-fit: contain; transform: scale(1.6); transform-origin: center center; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .float-wrapper { display: flex; width: 100%; height: 100%; justify-content: center; align-items: center; animation: floatIdle 3s ease-in-out infinite; }
+        @keyframes floatIdle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        
+        .floating-text { position: absolute; color: #e67e22; font-weight: bold; font-size: 1.5em; pointer-events: none; animation: floatUp 0.8s forwards; z-index: 20; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
 
-        /* --- Menu Zone --- */
-        #menu-zone { height: 50%; background-color: #ecf0f1; display: flex; flex-direction: column; border-top: 1px solid #ccc; }
-        #tabs { display: flex; background-color: #34495e; overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
+        /* --- 하단 메뉴 존 --- */
+        #menu-zone { height: 48%; background-color: #bdc3c7; display: flex; flex-direction: column; }
+        #tabs { display: flex; background-color: #7f8c8d; overflow-x: auto; white-space: nowrap; -ms-overflow-style: none; scrollbar-width: none; }
         #tabs::-webkit-scrollbar { display: none; }
-        .tab { flex: 0 0 33.33%; padding: 12px 0; text-align: center; color: #95a5a6; font-weight: bold; cursor: pointer; font-size: 0.9em; border-bottom: 3px solid transparent; }
-        .tab.active { background-color: #ecf0f1; color: #2c3e50; border-bottom: 3px solid #e74c3c; }
-        .tab-content { display: none; flex: 1; overflow-y: auto; padding: 12px; }
+        .tab { flex: 0 0 25%; padding: 12px 0; text-align: center; color: white; font-weight: bold; cursor: pointer; font-size: 0.9em; }
+        .tab.active { background-color: #bdc3c7; color: #2c3e50; }
+        .tab-content { display: none; flex: 1; overflow-y: auto; padding: 10px; }
         .tab-content.active { display: block; }
 
-        /* UI Elements */
-        .card { background: white; padding: 12px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border-left: 5px solid #34495e; }
-        .card h3 { margin: 0 0 8px 0; font-size: 1em; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; }
-        .category-title { background: #7f8c8d; color: white; padding: 5px; border-radius: 4px; font-size: 0.8em; text-align: center; margin: 10px 0; font-weight: bold; }
-        .item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #eee; }
-        .btn { background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 0.85em; }
-        .btn:disabled { background: #bdc3c7; cursor: not-allowed; }
-        .btn-red { background: #e74c3c; }
-
-        /* Market Styles */
-        .stock-price { font-weight: bold; font-size: 1.1em; }
-        .up { color: #e74c3c; } .down { color: #3498db; }
-        .input-box { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .category-title { background-color: #34495e; color: white; padding: 8px; border-radius: 5px; margin: 10px 0; font-size: 0.9em; font-weight: bold; text-align: center; }
+        .card { background: white; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; flex-direction: column; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .item-row { display: flex; justify-content: space-between; align-items: center; }
+        .buy-btn { background-color: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; font-size: 0.85em; cursor: pointer; }
+        .buy-btn:disabled { background-color: #95a5a6; cursor: not-allowed; }
+        
+        .market-item { border-left: 4px solid #34495e; }
+        .stock-price { font-size: 1.1em; font-weight: bold; transition: color 0.3s; }
+        .price-up { color: #e74c3c; } .price-down { color: #3498db; }
+        .stock-input { flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
         .lever-btn { padding: 4px 8px; font-size: 0.7em; background: #95a5a6; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 3px; }
         .lever-btn.active { background: #2c3e50; font-weight: bold; }
 
-        /* Real Estate Map (SVG) */
-        #map-container { width: 100%; height: 180px; background: #dfe6e9; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; position: relative; }
-        .map-svg { width: 100%; height: 100%; }
+        #map-container { width: 100%; height: 180px; background: #dfe6e9; border-radius: 8px; margin-bottom: 10px; position: relative; }
         .district { fill: #b2bec3; stroke: white; stroke-width: 1.5; cursor: pointer; transition: 0.2s; }
-        .district:hover { fill: #636e72; }
         .district.owned { fill: #f1c40f; stroke: #d35400; }
         .district.selected { stroke: #e74c3c; stroke-width: 3; }
         .river { fill: #74b9ff; }
 
-        /* Overlays */
-        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; z-index: 100; text-align: center; }
-        #jail-overlay { background: rgba(0,0,0,0.9); color: #e74c3c; flex-direction: column; font-weight: bold; font-size: 2em; }
-        #guide-overlay { background: rgba(0,0,0,0.7); }
-        .modal { background: white; width: 85%; padding: 20px; border-radius: 15px; max-height: 80%; overflow-y: auto; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; z-index: 100; }
+        #jail-overlay { background: rgba(0,0,0,0.85); color: red; flex-direction: column; font-weight: bold; font-size: 2em; text-align: center; }
+        #guide-overlay { background: rgba(0,0,0,0.6); }
+        .guide-box { background: white; width: 85%; padding: 20px; border-radius: 10px; max-height: 80%; overflow-y: auto; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
     <div id="jail-overlay" class="overlay">
-        🚨 POLICE 🚨<br><span style="font-size: 0.4em; color: white;">은행 습격 실패! 구속됨</span>
-        <div id="jail-timer" style="color: #f1c40f; font-size: 0.6em; margin-top: 15px;">30s</div>
+        🚨 경찰 검거 🚨<br>
+        <span style="font-size: 0.5em; color: white; margin-top: 10px;">은행 습격 실패!</span>
+        <span id="jail-timer" style="font-size: 0.6em; color: #f1c40f; margin-top: 10px;">30초 남음</span>
     </div>
 
-    <div id="guide-overlay" class="overlay" onclick="toggleGuide(false)">
-        <div class="modal" onclick="event.stopPropagation()">
-            <h2 style="margin-top:0">🎮 게임 가이드</h2>
-            <div style="text-align:left; font-size: 0.85em; line-height: 1.6;">
-                <b>1. 기본 조작:</b> 왼쪽은 주성(클릭), 오른쪽은 석현(회전)입니다.<br>
-                <b>2. 국장/미장:</b> 미장은 변동폭이 크고 위험합니다.<br>
-                <b>3. 코인:</b> 최대 5배 레버리지 가능! -100% 수익률 도달 시 원금이 <b>청산</b>됩니다.<br>
-                <b>4. 부동산:</b> 서울 9개 구의 건물을 사서 영구적인 <b>월세(초당 골드)</b>를 받으세요.<br>
-                <b>5. 은행 습격:</b> 성공률 30%. 대박 아니면 독방입니다.
-            </div>
-            <button class="btn" style="width:100%; margin-top:15px;" onclick="toggleGuide(false)">이해 완료</button>
+    <div id="guide-overlay" class="overlay">
+        <div class="guide-box">
+            <h2 style="margin-top:0;">📜 게임 가이드</h2>
+            <ul style="padding-left: 20px; font-size: 0.85em; line-height: 1.6;">
+                <li><b>왼쪽/오른쪽 터치:</b> 캐릭터를 눌러 골드를 벌어보세요.</li>
+                <li><b>업그레이드:</b> 클릭 골드와 초당 월세를 높입니다.</li>
+                <li><b>주식:</b> 국장/미장 타이밍을 맞춰 전재산을 불려보세요.</li>
+                <li><b>코인:</b> 레버리지는 기회이자 위기입니다. 청산을 조심하세요!</li>
+                <li><b>부동산:</b> 서울 곳곳에 건물을 사서 영구적인 월세를 받으세요.</li>
+            </ul>
+            <button class="buy-btn" style="width: 100%; background: #3498db;" onclick="toggleGuide(false)">확인</button>
         </div>
     </div>
 
     <div id="start-screen" class="screen active">
-        <h1 style="font-size: 2.5em; line-height: 1.2;">주성이와 석현이<br>키우기</h1>
-        <p style="margin-bottom: 40px; color: #bdc3c7;">The Capitalist Madness</p>
-        <button class="start-btn" onclick="showPrologue()">시작하기</button>
+        <h1>주성이와 석현이<br>키우기</h1>
+        <button class="start-btn" onclick="showPrologue()">키워보기</button>
     </div>
 
     <div id="prologue-screen" class="screen">
-        <div class="prologue-text">
-            당신이 가지지 못했던<br>
-            주성이와 석현이를<br>
-            자본의 힘으로 키워보세요...
-        </div>
-        <button class="skip-btn" style="margin-top:40px" onclick="startGame()">진입하기 ▶</button>
+        <p class="prologue-text">당신이 가지지 못했던<br>주성이와 석현이를<br>키워보세요...</p>
+        <button class="skip-btn" onclick="startGame()">스킵 ▶</button>
     </div>
 
     <div id="game-screen" class="screen">
         <div id="status-bar">
-            <div class="left-stat">보유 골드 <div id="guide-btn" style="display:inline-block" onclick="toggleGuide(true)">?</div><br><span id="gold-display" class="stat-val">0</span></div>
+            <div id="guide-btn" onclick="toggleGuide(true)">?</div>
+            <div class="left-stat">보유 골드<br><span id="currency-display" class="stat-val">0</span></div>
             <div class="right-stats">
                 <div>초당 골드<br><span id="gps-display" class="stat-val">0</span></div>
                 <div>클릭당 골드<br><span id="cpc-display" class="stat-val">1</span></div>
@@ -125,39 +116,37 @@
         </div>
 
         <div id="action-zone">
-            <div class="click-area" onmousedown="handleJuseong(event)" onmouseup="resetJuseong()" onmouseleave="resetJuseong()" ontouchstart="handleJuseong(event)" ontouchend="resetJuseong()">
+            <div class="click-area" onmousedown="pressJuseong(event)" onmouseup="releaseJuseong()" onmouseleave="releaseJuseong()" ontouchstart="pressJuseong(event)" ontouchend="releaseJuseong()">
                 <div class="character"><img id="juseong-img" src="juseong_up.png" alt="주성"></div>
             </div>
-            <div class="click-area" onmousedown="handleSeokhyun(event)" ontouchstart="handleSeokhyun(event)">
-                <div class="float-wrapper">
-                    <div class="character"><img id="seokhyun-img" src="seokhyun.png" alt="석현"></div>
-                </div>
+            <div class="click-area" onmousedown="tapSeokhyun(event)" ontouchstart="tapSeokhyun(event)">
+                <div class="float-wrapper"><div class="character"><img id="seokhyun-img" src="seokhyun.png" alt="석현"></div></div>
             </div>
         </div>
 
         <div id="menu-zone">
             <div id="tabs">
-                <div class="tab active" onclick="switchTab('upgrade')">강화</div>
+                <div class="tab active" onclick="switchTab('upgrade')">업그레이드</div>
                 <div class="tab" onclick="switchTab('market')">주식/코인</div>
                 <div class="tab" onclick="switchTab('estate')">부동산</div>
-                <div class="tab" onclick="switchTab('extra')">기타</div>
+                <div class="tab" onclick="switchTab('extra')">기타 메뉴</div>
             </div>
-
+            
             <div id="tab-upgrade" class="tab-content active"></div>
 
             <div id="tab-market" class="tab-content">
                 <div class="category-title">국내 주식 (-40% ~ +40%)</div>
-                <div id="k-market"></div>
+                <div id="market-k"></div>
                 <div class="category-title">미국 주식 (-80% ~ +80%)</div>
-                <div id="us-market"></div>
-                <div class="category-title">코인 시장 (-50% ~ +100%)</div>
-                <div id="crypto-market"></div>
+                <div id="market-us"></div>
+                <div class="category-title">코인 시장 (-50% ~ +100%, 레버리지)</div>
+                <div id="market-crypto"></div>
             </div>
 
             <div id="tab-estate" class="tab-content">
                 <div id="map-container">
-                    <svg class="map-svg" viewBox="0 0 400 200">
-                        <rect class="river" x="0" y="90" width="400" height="20" rx="10" />
+                    <svg viewBox="0 0 400 200" style="width:100%; height:100%;">
+                        <rect class="river" x="0" y="90" width="400" height="20" />
                         <path class="district" id="dist-nowon" d="M300,20 L350,20 L360,60 L310,70 Z" onclick="selectDistrict('nowon')" />
                         <path class="district" id="dist-mapo" d="M80,60 L130,60 L120,90 L70,90 Z" onclick="selectDistrict('mapo')" />
                         <path class="district" id="dist-yongsan" d="M160,70 L220,70 L210,100 L170,100 Z" onclick="selectDistrict('yongsan')" />
@@ -168,26 +157,28 @@
                         <path class="district" id="dist-gangnam" d="M220,115 L280,115 L290,165 L230,165 Z" onclick="selectDistrict('gangnam')" />
                         <path class="district" id="dist-gangdong" d="M300,110 L360,110 L370,140 L310,140 Z" onclick="selectDistrict('gangdong')" />
                     </svg>
-                    <div style="position:absolute; bottom:5px; right:10px; font-size:10px; color:#636e72;">서울 지도 (간략화)</div>
                 </div>
-                <div id="district-info" class="card">
-                    <p style="text-align:center; color:#95a5a6;">지도의 구역을 선택하세요</p>
+                <div id="district-info" class="card" style="text-align:center; padding: 15px;">
+                    <p style="color:#7f8c8d; margin:0;">지도를 눌러 매물을 확인하세요.</p>
                 </div>
             </div>
 
             <div id="tab-extra" class="tab-content">
-                <div class="card">
-                    <h3>🏦 은행 습격 (위험) <span class="up" style="font-size:0.7em">성공률 30%</span></h3>
-                    <p style="font-size:0.8em; color:#666;">성공 시 전재산 2.5배 / 실패 시 30초 구속</p>
-                    <button class="btn btn-red" style="width:100%" onclick="robBank()">습격 시작</button>
+                <div class="card" style="border: 2px solid #e74c3c;">
+                    <h3>🏦 은행 습격 <span style="font-size:0.7em; color:#e74c3c;">(성공률 30%)</span></h3>
+                    <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">전재산 2.5배 vs 30초 독방</p>
+                    <button class="buy-btn" style="background: #c0392b; width: 100%;" onclick="robBank()">습격 시작</button>
                 </div>
-                <div class="card">
-                    <h3>🎟️ 로또 추첨 <span id="lotto-timer" class="down">60s</span></h3>
-                    <div id="lotto-status" style="font-size:0.8em; margin-bottom:10px; color:#7f8c8d;">구매한 로또 없음</div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn" style="flex:1" onclick="buyLotto(0)">일반 (5k)</button>
-                        <button class="btn" style="flex:1" onclick="buyLotto(1)">고급 (10k)</button>
-                        <button class="btn btn-red" style="flex:1" onclick="buyLotto(2)">ㅈ되는 (100k)</button>
+                <div class="card" style="border: 2px solid #2ecc71;">
+                    <h3 style="display:flex; justify-content:space-between;">
+                        <span>🎟️ 기묘한 로또 (1%)</span>
+                        <span id="lotto-timer" style="color:#e67e22; font-size:0.8em;">60초 남음</span>
+                    </h3>
+                    <p style="font-size: 0.75em; color: #666; margin-bottom: 10px;">구매 로또: <span id="lotto-status" style="font-weight:bold; color:#2c3e50;">없음</span></p>
+                    <div style="display: flex; gap: 5px;">
+                        <button class="buy-btn" style="flex:1; background: #2ecc71; padding: 5px;" onclick="buyLotto(5000, '일반')">일반</button>
+                        <button class="buy-btn" style="flex:1; background: #3498db; padding: 5px;" onclick="buyLotto(10000, '고급')">고급</button>
+                        <button class="buy-btn" style="flex:1; background: #9b59b6; padding: 5px;" onclick="buyLotto(100000, 'ㅈ되는')">ㅈ되는</button>
                     </div>
                 </div>
             </div>
@@ -196,377 +187,81 @@
 </div>
 
 <script>
-    /* --- 🎵 Sound Engine (Web Audio API) --- */
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSfx(type) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        const now = audioCtx.currentTime;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    function initAudio() { if (audioCtx.state === 'suspended') audioCtx.resume(); }
 
-        if (type === 'coin') {
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(880, now);
-            osc.frequency.exponentialRampToValueAtTime(1320, now + 0.1);
-            gain.gain.setValueAtTime(0.1, now);
-            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
-        } else if (type === 'siren') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(440, now);
-            for(let i=0; i<10; i++) {
-                osc.frequency.linearRampToValueAtTime(880, now + i*0.3 + 0.15);
-                osc.frequency.linearRampToValueAtTime(440, now + i*0.3 + 0.3);
-            }
-            gain.gain.setValueAtTime(0.05, now);
-            osc.start(now); osc.stop(now + 3);
-        } else if (type === 'win') {
-            osc.type = 'sawtooth';
-            const notes = [523, 659, 783, 1046];
-            notes.forEach((f, i) => {
-                const o = audioCtx.createOscillator();
-                const g = audioCtx.createGain();
-                o.type = 'sawtooth'; o.connect(g); g.connect(audioCtx.destination);
-                o.frequency.setValueAtTime(f, now + i*0.1);
-                g.gain.setValueAtTime(0.1, now + i*0.1);
-                g.gain.exponentialRampToValueAtTime(0.01, now + i*0.1 + 0.4);
-                o.start(now + i*0.1); o.stop(now + i*0.1 + 0.4);
-            });
-        }
+    function playSfx(type) {
+        initAudio();
+        const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        if(type==='coin'){ osc.type='square'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(1200, now+0.1); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now+0.1); osc.start(now); osc.stop(now+0.1); }
+        else if(type==='siren'){ osc.type='triangle'; osc.frequency.setValueAtTime(600, now); for(let i=0; i<10; i++){ osc.frequency.linearRampToValueAtTime(1200, now+(i*0.3)+0.15); osc.frequency.linearRampToValueAtTime(600, now+(i*0.3)+0.3); } gain.gain.setValueAtTime(0.1, now); osc.start(now); osc.stop(now+3); }
+        else if(type==='win'){ const notes=[523,659,783,1046]; notes.forEach((f,i)=>{ const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.type='square'; o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(f, now+(i*0.1)); g.gain.setValueAtTime(0.1, now+(i*0.1)); g.gain.exponentialRampToValueAtTime(0.01, now+(i*0.1)+0.4); o.start(now+(i*0.1)); o.stop(now+(i*0.1)+0.4); }); }
     }
 
-    /* --- Game Data --- */
-    let state = {
-        gold: 0, cpc: 1, gps: 0, jailed: false,
-        upgrades: [
-            { id: 'j1', cat: 'j', name: "저세상 팔굽혀펴기", power: 1, cost: 50, lv: 0 },
-            { id: 'j2', cat: 'j', name: "고농축 보충제", power: 10, cost: 500, lv: 0 },
-            { id: 's1', cat: 's', name: "나홀로 철학 토론", power: 2, cost: 100, lv: 0 },
-            { id: 's2', cat: 's', name: "안경 도수 최적화", power: 25, cost: 1200, lv: 0 }
-        ],
-        markets: {
-            k: [
-                { id: 'samseon', name: '삼선전자', price: 1000, change: 0, owned: 0 },
-                { id: 'okhynix', name: 'OK하이닉스', price: 1000, change: 0, owned: 0 },
-                { id: 'hyundai', name: '헌대자동차', price: 1000, change: 0, owned: 0 }
-            ],
-            us: [
-                { id: 'tesla', name: '테슬아', price: 5000, change: 0, owned: 0 },
-                { id: 'nike', name: '냐이키', price: 5000, change: 0, owned: 0 },
-                { id: 'snp', name: 'S&P 500', price: 5000, change: 0, owned: 0 }
-            ],
-            crypto: [
-                { id: 'btc', name: '비토코인', price: 50000, change: 0, invested: 0, lever: 1 },
-                { id: 'doge', name: '도자코인', price: 50000, change: 0, invested: 0, lever: 1 },
-                { id: 'eth', name: '이더려움', price: 50000, change: 0, invested: 0, lever: 1 }
-            ]
-        },
-        realEstate: [
-            { id: 'nowon', name: '노원구', cost: 10000000, rent: 20000, owned: false },
-            { id: 'gangseo', name: '강서구', cost: 30000000, rent: 70000, owned: false },
-            { id: 'gangdong', name: '강동구', cost: 80000000, rent: 200000, owned: false },
-            { id: 'gwangjin', name: '광진구', cost: 200000000, rent: 550000, owned: false },
-            { id: 'mapo', name: '마포구', cost: 500000000, rent: 1500000, owned: false },
-            { id: 'seongdong', name: '성동구', cost: 1000000000, rent: 3500000, owned: false },
-            { id: 'yongsan', name: '용산구', cost: 3000000000, rent: 12000000, owned: false },
-            { id: 'seocho', name: '서초구', cost: 8000000000, rent: 35000000, owned: false },
-            { id: 'gangnam', name: '강남구', cost: 20000000000, rent: 100000000, owned: false }
-        ],
-        lotto: { active: null, timer: 60 }
+    let gameData = { currency: 0, clickPower: 1, autoPower: 0, isJailed: false };
+    let seokDeg = 0;
+
+    let upgrades = [
+        { id: 'j1', category: 'juseong', name: "저세상 팔굽혀펴기", target: "click", power: 1, baseCost: 50, level: 0, desc: "클릭당 골드 +1" },
+        { id: 'j2', category: 'juseong', name: "고농축 단백질 보충제", target: "click", power: 5, baseCost: 300, level: 0, desc: "클릭당 골드 +5" },
+        { id: 'j3', category: 'juseong', name: "상체 프레임 확장", target: "click", power: 25, baseCost: 2000, level: 0, desc: "클릭당 골드 +25" },
+        { id: 'j4', category: 'juseong', name: "공중 부양 스쿼트", target: "click", power: 150, baseCost: 15000, level: 0, desc: "클릭당 골드 +150" },
+        { id: 'j5', category: 'juseong', name: "골든-주성 (초사이언)", target: "click", power: 1000, baseCost: 100000, level: 0, desc: "클릭당 골드 +1,000" },
+        { id: 's1', category: 'seokhyun', name: "나홀로 철학 토론", target: "auto", power: 2, baseCost: 100, level: 0, desc: "초당 골드 +2" },
+        { id: 's2', category: 'seokhyun', name: "안경 도수 최적화", target: "auto", power: 10, baseCost: 800, level: 0, desc: "초당 골드 +10" },
+        { id: 's3', category: 'seokhyun', name: "4차원 유체이탈", target: "auto", power: 50, baseCost: 5000, level: 0, desc: "초당 골드 +50" },
+        { id: 's4', category: 'seokhyun', name: "논리적 오류 공격", target: "auto", power: 300, baseCost: 35000, level: 0, desc: "초당 골드 +300" },
+        { id: 's5', category: 'seokhyun', name: "우주 만물의 근원", target: "auto", power: 2000, baseCost: 250000, level: 0, desc: "초당 골드 +2,000" }
+    ];
+
+    let markets = {
+        k: [{ id:'samseon', name:'삼선전자', price:1000, shares:0, change:0 }, { id:'okhynix', name:'OK하이닉스', price:1000, shares:0, change:0 }, { id:'hyundai', name:'헌대자동차', price:1000, shares:0, change:0 }],
+        us: [{ id:'tesla', name:'테슬아', price:5000, shares:0, change:0 }, { id:'nike', name:'냐이키', price:5000, shares:0, change:0 }, { id:'snp', name:'S&P 500', price:5000, shares:0, change:0 }],
+        crypto: [{ id:'btc', name:'비토코인', price:50000, invested:0, lever:1, change:0 }, { id:'doge', name:'도자코인', price:50000, invested:0, lever:1, change:0 }, { id:'eth', name:'이더려움', price:50000, invested:0, lever:1, change:0 }]
     };
 
-    /* --- Core Engine --- */
-    function format(n) { return Math.floor(n).toLocaleString(); }
-    function updateUI() {
-        if(state.jailed) return;
-        document.getElementById('gold-display').innerText = format(state.gold);
-        document.getElementById('gps-display').innerText = format(state.gps);
-        document.getElementById('cpc-display').innerText = format(state.cpc);
-        
-        // Buttons availability
-        document.querySelectorAll('.btn-buy').forEach(b => {
-            const cost = parseInt(b.dataset.cost);
-            b.disabled = state.gold < cost;
-        });
-    }
+    let realEstate = [
+        { id:'nowon', name:'노원구', cost:10000000, rent:20000, owned:false }, { id:'gangseo', name:'강서구', cost:30000000, rent:70000, owned:false }, { id:'gangdong', name:'강동구', cost:80000000, rent:200000, owned:false }, { id:'gwangjin', name:'광진구', cost:200000000, rent:550000, owned:false }, { id:'mapo', name:'마포구', cost:500000000, rent:1500000, owned:false }, { id:'seongdong', name:'성동구', cost:1000000000, rent:3500000, owned:false }, { id:'yongsan', name:'용산구', cost:3000000000, rent:12000000, owned:false }, { id:'seocho', name:'서초구', cost:8000000000, rent:35000000, owned:false }, { id:'gangnam', name:'강남구', cost:20000000000, rent:100000000, owned:false }
+    ];
 
-    /* --- Action Zone --- */
-    function handleJuseong(e) {
-        if(e.type === 'touchstart') e.preventDefault();
-        if(state.jailed) return;
-        state.gold += state.cpc;
-        document.getElementById('juseong-img').src = 'juseong_down.png';
-        spawnText(e, `#e74c3c`, `+${format(state.cpc)}`);
-        playSfx('coin'); updateUI();
-    }
-    function resetJuseong() { document.getElementById('juseong-img').src = 'juseong_up.png'; }
-    
-    let seokDeg = 0;
-    function handleSeokhyun(e) {
-        if(e.type === 'touchstart') e.preventDefault();
-        if(state.jailed) return;
-        state.gold += state.cpc;
-        seokDeg += 360;
-        document.getElementById('seokhyun-img').style.transform = `rotate(${seokDeg}deg)`;
-        spawnText(e, `#3498db`, `+${format(state.cpc)}`);
-        playSfx('coin'); updateUI();
-    }
+    let lottoTime = 60; let myLotto = null;
 
-    function spawnText(e, color, str) {
-        const x = e.clientX || e.touches[0].clientX;
-        const y = e.clientY || e.touches[0].clientY;
-        const div = document.createElement('div');
-        div.className = 'floating-text';
-        div.style.left = `${x-20}px`; div.style.top = `${y-20}px`; div.style.color = color;
-        div.innerText = str;
-        document.body.appendChild(div);
-        setTimeout(() => div.remove(), 700);
-    }
-
-    /* --- Markets Logic --- */
-    function updateMarketPrices() {
-        // K-Market
-        state.markets.k.forEach(s => {
-            const change = (Math.random() * 0.8) - 0.4;
-            s.price = Math.max(10, Math.floor(s.price * (1 + change)));
-            s.change = Math.floor(change * 100);
-        });
-        // US-Market
-        state.markets.us.forEach(s => {
-            const change = (Math.random() * 1.6) - 0.8;
-            s.price = Math.max(10, Math.floor(s.price * (1 + change)));
-            s.change = Math.floor(change * 100);
-        });
-        // Crypto (Leverage logic)
-        state.markets.crypto.forEach(c => {
-            const change = (Math.random() * 1.5) - 0.5;
-            const levChange = change * c.lever;
-            
-            if (c.invested > 0) {
-                const prevVal = c.invested;
-                c.invested = Math.max(0, c.invested * (1 + levChange));
-                if (c.invested === 0 && prevVal > 0) {
-                    alert(`${c.name} 포지션이 청산되었습니다! 원금 0원.`);
-                }
-            }
-            c.price = Math.max(10, Math.floor(c.price * (1 + change)));
-            c.change = Math.floor(levChange * 100);
-        });
-        renderMarket();
-    }
-    setInterval(updateMarketPrices, 5000);
-
-    /* --- Real Estate Logic --- */
-    function updateEstatePrices() {
-        state.realEstate.forEach(e => {
-            const change = (Math.random() * 0.15) - 0.05; // -5% ~ +10%
-            e.cost = Math.floor(e.cost * (1 + change));
-        });
-        if(document.getElementById('tab-estate').classList.contains('active')) selectDistrict(lastSelectedDistrict);
-    }
-    setInterval(updateEstatePrices, 10000);
-
-    let lastSelectedDistrict = null;
-    function selectDistrict(id) {
-        if(!id) return;
-        lastSelectedDistrict = id;
-        document.querySelectorAll('.district').forEach(d => d.classList.remove('selected'));
-        document.getElementById(`dist-${id}`).classList.add('selected');
-
-        const data = state.realEstate.find(e => e.id === id);
-        const info = document.getElementById('district-info');
-        info.innerHTML = `
-            <h3>${data.name} ${data.owned ? '✅' : ''}</h3>
-            <div class="item-row">매매가 <span>${format(data.cost)} G</span></div>
-            <div class="item-row">초당 월세 <span>+${format(data.rent)} G</span></div>
-            <button class="btn" style="width:100%" onclick="buyEstate('${id}')" ${state.gold < data.cost || data.owned ? 'disabled' : ''}>
-                ${data.owned ? '소유 중' : '부동산 매수'}
-            </button>
-        `;
-    }
-
-    function buyEstate(id) {
-        const data = state.realEstate.find(e => e.id === id);
-        if(state.gold >= data.cost && !data.owned) {
-            state.gold -= data.cost;
-            data.owned = true;
-            state.gps += data.rent;
-            document.getElementById(`dist-${id}`).classList.add('owned');
-            playSfx('win');
-            selectDistrict(id);
-            updateUI();
-        }
-    }
-
-    /* --- Extra Actions --- */
-    function robBank() {
-        if(confirm("정말 은행을 습격하시겠습니까? (성공률 30%)")) {
-            if(Math.random() < 0.3) {
-                const win = state.gold * 1.5;
-                state.gold += win;
-                alert(`습격 성공! ${format(win)} G를 획득했습니다.`);
-                playSfx('win');
-            } else {
-                state.jailed = true;
-                document.getElementById('jail-overlay').style.display = 'flex';
-                playSfx('siren');
-                let time = 30;
-                const itv = setInterval(() => {
-                    time--;
-                    document.getElementById('jail-timer').innerText = time + 's';
-                    if(time <= 0) {
-                        clearInterval(itv);
-                        state.jailed = false;
-                        document.getElementById('jail-overlay').style.display = 'none';
-                    }
-                }, 1000);
-            }
-            updateUI();
-        }
-    }
-
-    function buyLotto(type) {
-        const costs = [5000, 10000, 100000];
-        const names = ['일반', '고급', 'ㅈ되는'];
-        if(state.gold >= costs[type]) {
-            state.gold -= costs[type];
-            state.lotto.active = type;
-            document.getElementById('lotto-status').innerText = `${names[type]} 로또 구매 완료!`;
-            updateUI();
-        }
-    }
-
-    /* --- Initialization & Loop --- */
-    function showPrologue() { document.getElementById('start-screen').classList.remove('active'); document.getElementById('prologue-screen').classList.add('active'); }
-    function startGame() { 
-        document.getElementById('prologue-screen').classList.remove('active'); 
-        document.getElementById('game-screen').classList.add('active');
-        renderUpgrade(); renderMarket(); updateUI();
-    }
-    function switchTab(t) {
-        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        event.target.classList.add('active');
-        document.getElementById('tab-' + t).classList.add('active');
-    }
+    function format(num) { return Math.floor(num).toLocaleString('ko-KR'); }
+    function updateUI() { if(gameData.isJailed) return; document.getElementById('currency-display').innerText = format(gameData.currency); document.getElementById('gps-display').innerText = format(gameData.autoPower); document.getElementById('cpc-display').innerText = format(gameData.clickPower); upgrades.forEach(u => { const btn = document.getElementById(`btn-${u.id}`); if(btn) btn.disabled = gameData.currency < Math.floor(u.baseCost * Math.pow(1.15, u.level)); }); }
+    function showPrologue() { initAudio(); document.getElementById('start-screen').classList.remove('active'); document.getElementById('prologue-screen').classList.add('active'); }
+    function startGame() { document.getElementById('prologue-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active'); renderUpgrades(); renderMarkets(); updateUI(); }
     function toggleGuide(s) { document.getElementById('guide-overlay').style.display = s ? 'flex' : 'none'; }
+    function switchTab(t) { document.querySelectorAll('.tab').forEach(el => el.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); event.target.classList.add('active'); document.getElementById('tab-' + t).classList.add('active'); }
 
-    function renderUpgrade() {
-        const c = document.getElementById('tab-upgrade');
-        c.innerHTML = '<div class="category-title">주성이 키우기 (클릭 UP)</div>';
-        state.upgrades.filter(u=>u.cat==='j').forEach(u => c.innerHTML += createUpgradeHTML(u));
-        c.innerHTML += '<div class="category-title">석현이 키우기 (초당 UP)</div>';
-        state.upgrades.filter(u=>u.cat==='s').forEach(u => c.innerHTML += createUpgradeHTML(u));
-    }
-    function createUpgradeHTML(u) {
-        return `<div class="card"><div class="item-row"><b>${u.name}</b> <span style="color:#e67e22">Lv.${u.lv}</span></div>
-                <div class="item-row" style="font-size:0.8em; color:#7f8c8d;">${u.cat==='j'?'클릭':'초당'} 골드 +${u.power} <button class="btn btn-buy" data-cost="${u.cost}" onclick="buyU('${u.id}')">${format(u.cost)} G</button></div></div>`;
-    }
-    function buyU(id) {
-        const u = state.upgrades.find(x => x.id === id);
-        if(state.gold >= u.cost) {
-            state.gold -= u.cost;
-            u.lv++;
-            if(u.cat === 'j') state.cpc += u.power; else state.gps += u.power;
-            u.cost = Math.floor(u.cost * 1.2);
-            renderUpgrade(); updateUI();
-        }
-    }
+    function processClick(e, color) { if(gameData.isJailed) return; let x = e.clientX || e.touches[0].clientX; let y = e.clientY || e.touches[0].clientY; playSfx('coin'); gameData.currency += gameData.clickPower; const t = document.createElement('div'); t.className = 'floating-text'; t.innerText = `+${format(gameData.clickPower)}`; t.style.left = `${x-20}px`; t.style.top = `${y-20}px`; t.style.color = color; document.body.appendChild(t); setTimeout(() => t.remove(), 800); updateUI(); }
+    function pressJuseong(e) { if(e.type==='touchstart')e.preventDefault(); if(!gameData.isJailed){ processClick(e, '#e74c3c'); document.getElementById('juseong-img').src = 'juseong_down.png'; } }
+    function releaseJuseong() { document.getElementById('juseong-img').src = 'juseong_up.png'; }
+    function tapSeokhyun(e) { if(e.type==='touchstart')e.preventDefault(); if(!gameData.isJailed){ processClick(e, '#3498db'); seokDeg += 360; document.getElementById('seokhyun-img').style.transform = `scale(1.6) rotate(${seokDeg}deg)`; } }
 
-    function renderMarket() {
-        const k = document.getElementById('k-market'); k.innerHTML = '';
-        state.markets.k.forEach(s => k.innerHTML += createMarketHTML(s, 'k'));
-        const us = document.getElementById('us-market'); us.innerHTML = '';
-        state.markets.us.forEach(s => us.innerHTML += createMarketHTML(s, 'us'));
-        const cr = document.getElementById('crypto-market'); cr.innerHTML = '';
-        state.markets.crypto.forEach(s => cr.innerHTML += createCryptoHTML(s));
-    }
-    function createMarketHTML(s, cat) {
-        return `<div class="card">
-            <h3>${s.name} <span class="stock-price ${s.change>=0?'up':'down'}">${format(s.price)} (${s.change>=0?'+':''}${s.change}%)</span></h3>
-            <div class="item-row">보유량: ${format(s.owned)}주 <span>평가액: ${format(s.owned * s.price)} G</span></div>
-            <div class="stock-input-group">
-                <input type="number" id="in-${s.id}" class="input-box" placeholder="투자 금액 (G)">
-                <div style="display:flex; gap:5px;">
-                    <button class="btn" style="flex:1" onclick="tradeStock('${cat}','${s.id}',true)">매수</button>
-                    <button class="btn btn-red" style="flex:1" onclick="tradeStock('${cat}','${s.id}',false)">전량 매도</button>
-                </div>
-            </div>
-        </div>`;
-    }
-    function createCryptoHTML(s) {
-        return `<div class="card">
-            <h3>${s.name} <span class="stock-price ${s.change>=0?'up':'down'}">${format(s.price)} (${s.change>=0?'+':''}${s.change}%)</span></h3>
-            <div class="item-row">레버리지: 
-                <span>
-                    <button class="lever-btn ${s.lever===1?'active':''}" onclick="setLever('${s.id}',1)">1x</button>
-                    <button class="lever-btn ${s.lever===3?'active':''}" onclick="setLever('${s.id}',3)">3x</button>
-                    <button class="lever-btn ${s.lever===5?'active':''}" onclick="setLever('${s.id}',5)">5x</button>
-                </span>
-            </div>
-            <div class="item-row">내 포지션: <span class="up">${format(s.invested)} G</span></div>
-            <input type="number" id="in-${s.id}" class="input-box" placeholder="베팅 금액 (G)">
-            <div style="display:flex; gap:5px;">
-                <button class="btn" style="flex:1" onclick="tradeCrypto('${s.id}',true)">베팅</button>
-                <button class="btn btn-red" style="flex:1" onclick="tradeCrypto('${s.id}',false)">전량 익절</button>
-            </div>
-        </div>`;
-    }
+    function buyUpgrade(id) { const u = upgrades.find(x => x.id === id); let cost = Math.floor(u.baseCost * Math.pow(1.15, u.level)); if (gameData.currency >= cost) { gameData.currency -= cost; u.level++; if (u.target === 'click') gameData.clickPower += u.power; else gameData.autoPower += u.power; document.getElementById(`btn-${u.id}`).innerText = `${format(Math.floor(u.baseCost * Math.pow(1.15, u.level)))}G`; document.getElementById(`lv-${u.id}`).innerText = `Lv.${u.level}`; updateUI(); } }
+    function renderUpgrades() { const l = document.getElementById('tab-upgrade'); l.innerHTML = '<div class="category-title">주성이 키우기 (클릭 골드 UP)</div>'; upgrades.filter(u=>u.category==='juseong').forEach(u => l.innerHTML += createUpgHTML(u)); l.innerHTML += '<div class="category-title">석현이 키우기 (초당 골드 UP)</div>'; upgrades.filter(u=>u.category==='seokhyun').forEach(u => l.innerHTML += createUpgHTML(u)); }
+    function createUpgHTML(u) { return `<div class="card"><div class="item-row"><div style="font-weight:bold;">${u.name} <span id="lv-${u.id}" style="color:#e67e22">Lv.${u.level}</span><br><span style="font-size:0.75em;color:#7f8c8d;font-weight:normal;">${u.desc}</span></div><button class="buy-btn" id="btn-${u.id}" onclick="buyUpgrade('${u.id}')">${format(Math.floor(u.baseCost * Math.pow(1.15, u.level)))}G</button></div></div>`; }
 
-    function tradeStock(cat, id, buy) {
-        const s = state.markets[cat].find(x => x.id === id);
-        if(buy) {
-            const val = parseInt(document.getElementById(`in-${id}`).value);
-            if(state.gold >= val) { state.gold -= val; s.owned += val / s.price; }
-        } else {
-            state.gold += s.owned * s.price; s.owned = 0;
-        }
-        renderMarket(); updateUI();
-    }
-    function setLever(id, l) {
-        const s = state.markets.crypto.find(x => x.id === id);
-        if(s.invested > 0) { alert("이미 포지션이 열려있습니다."); return; }
-        s.lever = l; renderMarket();
-    }
-    function tradeCrypto(id, buy) {
-        const s = state.markets.crypto.find(x => x.id === id);
-        if(buy) {
-            const val = parseInt(document.getElementById(`in-${id}`).value);
-            if(state.gold >= val) { state.gold -= val; s.invested += val; }
-        } else {
-            state.gold += s.invested; s.invested = 0;
-        }
-        renderMarket(); updateUI();
-    }
+    function renderMarkets() { const k = document.getElementById('market-k'); k.innerHTML = ''; markets.k.forEach(s => k.innerHTML += createStockHTML(s, 'k')); const u = document.getElementById('market-us'); u.innerHTML = ''; markets.us.forEach(s => u.innerHTML += createStockHTML(s, 'us')); const c = document.getElementById('market-crypto'); c.innerHTML = ''; markets.crypto.forEach(s => c.innerHTML += createCryptoHTML(s)); }
+    function createStockHTML(s, m) { let cls = s.change >= 0 ? 'price-up' : 'price-down'; return `<div class="card market-item"><div class="item-row"><b>${s.name}</b> <span class="stock-price ${cls}">${format(s.price)} ${s.change>=0?'▲':'▼'} ${Math.abs(s.change)}%</span></div><div style="font-size:0.8em;margin-bottom:5px;">보유: ${format(s.shares)}주 (${format(s.shares*s.price)}G)</div><div style="display:flex;gap:5px;"><input type="number" id="in-${s.id}" class="stock-input" placeholder="골드"><button class="buy-btn" onclick="tradeStock('${m}','${s.id}',true)">매수</button><button class="buy-btn" style="background:#e74c3c" onclick="tradeStock('${m}','${s.id}',false)">매도</button></div></div>`; }
+    function createCryptoHTML(c) { let cls = c.change >= 0 ? 'price-up' : 'price-down'; return `<div class="card market-item"><div class="item-row"><b>${c.name}</b> <span class="stock-price ${cls}">${format(c.price)} ${c.change>=0?'▲':'▼'} ${Math.abs(c.change)}%</span></div><div style="font-size:0.8em;margin:5px 0;">배수: <button class="lever-btn ${c.lever===1?'active':''}" onclick="setLever('${c.id}',1)">1x</button><button class="lever-btn ${c.lever===3?'active':''}" onclick="setLever('${c.id}',3)">3x</button><button class="lever-btn ${c.lever===5?'active':''}" onclick="setLever('${c.id}',5)">5x</button></div><div style="font-size:0.8em;margin-bottom:5px;">투자: <span class="price-up">${format(c.invested)}G</span></div><div style="display:flex;gap:5px;"><input type="number" id="in-${c.id}" class="stock-input" placeholder="골드"><button class="buy-btn" onclick="tradeCrypto('${c.id}',true)">베팅</button><button class="buy-btn" style="background:#e74c3c" onclick="tradeCrypto('${c.id}',false)">익절</button></div></div>`; }
+    setInterval(() => { markets.k.forEach(s => { let ch = (Math.random()*0.8)-0.4; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); markets.us.forEach(s => { let ch = (Math.random()*1.6)-0.8; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); markets.crypto.forEach(c => { let bCh = (Math.random()*1.5)-0.5; let lCh = bCh*c.lever; if(c.invested > 0){ c.invested = Math.floor(c.invested*(1+lCh)); if(c.invested <= 0){ c.invested=0; alert(`[청산] ${c.name} 투자금이 증발했습니다.`); } } c.price = Math.max(10, Math.floor(c.price*(1+bCh))); c.change = Math.floor(lCh*100); }); if(document.getElementById('tab-market').classList.contains('active')) renderMarkets(); }, 5000);
+    function tradeStock(m, id, b) { const s = markets[m].find(x => x.id === id); if(b){ let a = parseInt(document.getElementById(`in-${id}`).value); if(a > 0 && gameData.currency >= a){ gameData.currency -= a; s.shares += a/s.price; } } else { gameData.currency += Math.floor(s.shares*s.price); s.shares = 0; } renderMarkets(); updateUI(); }
+    function setLever(id, l) { const c = markets.crypto.find(x => x.id === id); if(c.invested > 0) return; c.lever = l; renderMarkets(); }
+    function tradeCrypto(id, b) { const c = markets.crypto.find(x => x.id === id); if(b){ let a = parseInt(document.getElementById(`in-${id}`).value); if(a > 0 && gameData.currency >= a){ gameData.currency -= a; c.invested += a; } } else { gameData.currency += c.invested; c.invested = 0; } renderMarkets(); updateUI(); }
 
-    /* --- Final Loop --- */
-    setInterval(() => {
-        if(!state.jailed) {
-            state.gold += state.gps / 10;
-            updateUI();
-        }
-        // Lotto timer
-        state.lotto.timer--;
-        document.getElementById('lotto-timer').innerText = state.lotto.timer + 's';
-        if(state.lotto.timer <= 0) {
-            if(state.lotto.active !== null) {
-                if(Math.random() < 0.01) {
-                    let win = 0;
-                    if(state.lotto.active === 0) win = 500000;
-                    else if(state.lotto.active === 1) win = state.cpc * 1000;
-                    else win = state.gold * 10;
-                    state.gold += win; alert(`로또 당첨! ${format(win)} G 획득!`); playSfx('win');
-                } else {
-                    document.getElementById('lotto-status').innerText = "낙첨... 다음 기회에";
-                    setTimeout(() => document.getElementById('lotto-status').innerText = "구매한 로또 없음", 3000);
-                }
-                state.lotto.active = null;
-            }
-            state.lotto.timer = 60;
-        }
-    }, 100);
+    function selectDistrict(id) { const d = realEstate.find(x => x.id === id); document.querySelectorAll('.district').forEach(el => el.classList.remove('selected')); document.getElementById(`dist-${id}`).classList.add('selected'); document.getElementById('district-info').innerHTML = `<h3 style="margin:0 0 5px 0;">${d.name} ${d.owned?'✅':''}</h3><p style="font-size:0.85em;margin:5px 0;">매매가: ${format(d.cost)}G | 월세: +${format(d.rent)}G</p><button class="buy-btn" style="width:100%" onclick="buyEstate('${id}')" ${gameData.currency < d.cost || d.owned ? 'disabled' : ''}>${d.owned?'소유중':'매수'}</button>`; }
+    function buyEstate(id) { const d = realEstate.find(x => x.id === id); if(gameData.currency >= d.cost && !d.owned){ gameData.currency -= d.cost; d.owned = true; gameData.autoPower += d.rent; document.getElementById(`dist-${id}`).classList.add('owned'); playSfx('win'); selectDistrict(id); updateUI(); } }
+    setInterval(() => { realEstate.forEach(e => { e.cost = Math.floor(e.cost * (1 + (Math.random()*0.15 - 0.05))); }); }, 10000);
+
+    function robBank() { if(confirm("은행 습격? 성공30%")){ if(Math.random()<0.3){ gameData.currency += gameData.currency*1.5; playSfx('win'); alert("대성공!"); } else { playSfx('siren'); gameData.isJailed=true; document.getElementById('jail-overlay').style.display='flex'; let t=30; let i=setInterval(()=>{ t--; document.getElementById('jail-timer').innerText=`${t}초 남음`; if(t<=0){ clearInterval(i); gameData.isJailed=false; document.getElementById('jail-overlay').style.display='none'; } },1000); } updateUI(); } }
+    function buyLotto(c, n) { if(myLotto) return; if(gameData.currency >= c){ gameData.currency -= c; myLotto = { c, n }; document.getElementById('lotto-status').innerText = `${n} 로또 대기중...`; updateUI(); } }
+    setInterval(() => { lottoTime--; document.getElementById('lotto-timer').innerText = `${lottoTime}초 남음`; if(lottoTime <= 0){ if(myLotto){ if(Math.random()<0.01){ let r=0; if(myLotto.c===5000) r=500000; else if(myLotto.c===10000) r=gameData.clickPower*1000; else r=gameData.currency*10; gameData.currency += r; playSfx('win'); alert(`당첨! ${format(r)}G!`); } else { document.getElementById('lotto-status').innerText = "낙첨..."; setTimeout(()=>document.getElementById('lotto-status').innerText="없음", 3000); } myLotto = null; updateUI(); } lottoTime = 60; } }, 1000);
+
+    setInterval(() => { if (!gameData.isJailed && gameData.autoPower > 0) { gameData.currency += gameData.autoPower / 10; updateUI(); } }, 100);
 </script>
 </body>
 </html>
