@@ -61,15 +61,15 @@
         .stock-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
         .stock-name { font-weight: bold; font-size: 0.95em; }
         .stock-price { font-size: 1.2em; font-weight: bold; transition: color 0.3s; }
-        .price-up { color: #e74c3c; } /* 빨간색 상승 */
-        .price-down { color: #3498db; } /* 파란색 하락 */
+        .price-up { color: #e74c3c; } 
+        .price-down { color: #3498db; } 
         .stock-input-group { display: flex; gap: 5px; margin-top: 8px; }
         .stock-input { flex: 1; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
         
         .lotto-btn-group { display: flex; gap: 5px; margin-top: 5px; }
         .lotto-btn { flex: 1; padding: 8px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; font-size: 0.85em; }
 
-        /* 모달 오버레이 (감옥 & 가이드 공통) */
+        /* 모달 오버레이 */
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; z-index: 100; }
         #jail-overlay { background: rgba(0,0,0,0.85); color: red; flex-direction: column; font-weight: bold; font-size: 2em; text-align: center; }
         #guide-overlay { background: rgba(0,0,0,0.6); }
@@ -117,7 +117,6 @@
     <div id="game-screen" class="screen">
         <div id="status-bar">
             <div id="guide-btn" onclick="toggleGuide(true)">?</div>
-            
             <div class="left-stat">보유 골드<br><span id="currency-display" class="stat-val">0</span></div>
             <div class="right-stats">
                 <div>초당 골드<br><span id="gps-display" class="stat-val">0</span></div>
@@ -152,7 +151,6 @@
 
                 <div class="extra-card">
                     <h3>📈 주식 시장 <span style="font-size:0.7em; color:#7f8c8d;">(5초 갱신)</span></h3>
-                    
                     <div class="stock-item">
                         <div class="stock-header">
                             <span class="stock-name">삼선전자</span>
@@ -165,7 +163,6 @@
                             <button class="buy-btn" style="background:#e74c3c;" onclick="sellStock('samseon')">전량매도</button>
                         </div>
                     </div>
-
                     <div class="stock-item">
                         <div class="stock-header">
                             <span class="stock-name">ok하이닉스</span>
@@ -199,8 +196,91 @@
 </div>
 
 <script>
+    // --- 🎵 자바스크립트 수제 레트로 사운드 엔진 (Web Audio API) ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+
+    // 브라우저 정책상 사용자 상호작용 후 오디오 재생 가능
+    function initAudio() {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    // 1. 코인 소리 (띠링!)
+    function playSoundCoin() {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        let now = audioCtx.currentTime;
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+        
+        gain.gain.setValueAtTime(0.1, now); // 볼륨 조절 (0.1)
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        
+        osc.start(now);
+        osc.stop(now + 0.1);
+    }
+
+    // 2. 경찰 사이렌 (삐용삐용)
+    function playSoundSiren() {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        let now = audioCtx.currentTime;
+        osc.frequency.setValueAtTime(600, now);
+        
+        // 3초 동안 삐용삐용 반복
+        for(let i=0; i<15; i++) {
+            osc.frequency.linearRampToValueAtTime(1200, now + (i * 0.2) + 0.1);
+            osc.frequency.linearRampToValueAtTime(600, now + (i * 0.2) + 0.2);
+        }
+        
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.setValueAtTime(0.1, now + 2.8);
+        gain.gain.linearRampToValueAtTime(0.01, now + 3);
+        
+        osc.start(now);
+        osc.stop(now + 3);
+    }
+
+    // 3. 로또 당첨 팡파레 (빰빠바빰!)
+    function playSoundApplause() {
+        initAudio();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // 도, 미, 솔, 높은도
+        
+        notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            let startTime = audioCtx.currentTime + (i * 0.15);
+            let duration = (i === notes.length - 1) ? 0.6 : 0.1;
+            
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0.1, startTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            osc.start(startTime);
+            osc.stop(startTime + duration);
+        });
+    }
+
     // --- 화면 및 탭 전환 ---
-    function showPrologue() { document.getElementById('start-screen').classList.remove('active'); document.getElementById('prologue-screen').classList.add('active'); }
+    function showPrologue() { 
+        initAudio(); // 첫 클릭 시 오디오 활성화
+        document.getElementById('start-screen').classList.remove('active'); 
+        document.getElementById('prologue-screen').classList.add('active'); 
+    }
     function startGame() { document.getElementById('prologue-screen').classList.remove('active'); document.getElementById('game-screen').classList.add('active'); renderUpgrades(); }
     function toggleGuide(show) { document.getElementById('guide-overlay').style.display = show ? 'flex' : 'none'; }
     function switchTab(tab) {
@@ -213,7 +293,6 @@
     // --- 게임 데이터 ---
     let gameData = { currency: 0, clickPower: 1, autoPower: 0, isJailed: false };
     
-    // 업그레이드 데이터
     let upgrades = [
         { id: 'j1', category: 'juseong', name: "저세상 팔굽혀펴기", target: "click", power: 1, baseCost: 50, level: 0, desc: "클릭당 골드 +1" },
         { id: 'j2', category: 'juseong', name: "고농축 단백질 보충제", target: "click", power: 5, baseCost: 300, level: 0, desc: "클릭당 골드 +5" },
@@ -228,15 +307,13 @@
         { id: 's5', category: 'seokhyun', name: "우주 만물의 근원", target: "auto", power: 2000, baseCost: 250000, level: 0, desc: "초당 골드 +2,000" }
     ];
 
-    // 주식 데이터
     let stocks = {
         samseon: { price: 1000, shares: 0 },
         ok: { price: 1000, shares: 0 }
     };
 
-    // 로또 데이터
     let lottoTime = 60;
-    let myLotto = null; // null 또는 { type: 5000, name: '일반' }
+    let myLotto = null; 
 
     function format(num) { return Math.floor(num).toLocaleString('ko-KR'); }
 
@@ -246,11 +323,9 @@
         document.getElementById('gps-display').innerText = format(gameData.autoPower);
         document.getElementById('cpc-display').innerText = format(gameData.clickPower);
         
-        // 주식 평가액 업데이트
         document.getElementById('val-samseon').innerText = format(stocks.samseon.shares * stocks.samseon.price);
         document.getElementById('val-ok').innerText = format(stocks.ok.shares * stocks.ok.price);
 
-        // 업그레이드 버튼 업데이트
         upgrades.forEach(upg => {
             const btn = document.getElementById(`btn-${upg.id}`);
             if (btn) {
@@ -268,6 +343,7 @@
         let x = e.clientX; let y = e.clientY;
         if(e.type === 'touchstart') { x = e.touches[0].clientX; y = e.touches[0].clientY; }
         
+        playSoundCoin(); // 🎵 코인 소리 출력
         gameData.currency += gameData.clickPower;
         const t = document.createElement('div'); t.className = 'floating-text'; t.innerText = `+${format(gameData.clickPower)}`;
         t.style.left = `${x-20}px`; t.style.top = `${y-20}px`; t.style.color = color;
@@ -310,10 +386,12 @@
     function robBank() {
         if(confirm("정말 은행을 습격하시겠습니까?\n성공(30%): 전재산 2.5배\n실패(70%): 30초 정지")) {
             if(Math.random() < 0.3) { 
-                let bonus = gameData.currency * 1.5; // 원래 금액 + 1.5배 = 2.5배
+                playSoundCoin(); // 🎵 성공 코인
+                let bonus = gameData.currency * 1.5; 
                 gameData.currency += bonus;
                 alert(`대성공!! 골드가 2.5배가 되었습니다!\n(+${format(bonus)}G)`); 
             } else {
+                playSoundSiren(); // 🎵 실패 사이렌
                 gameData.isJailed = true; 
                 document.getElementById('jail-overlay').style.display = 'flex';
                 let timeLeft = 30;
@@ -336,7 +414,7 @@
     function updateStocks() {
         ['samseon', 'ok'].forEach(id => {
             let changeRate = (Math.random() * 0.8) - 0.4; // -40% ~ +40%
-            stocks[id].price = Math.max(10, Math.floor(stocks[id].price * (1 + changeRate))); // 최소가 10G
+            stocks[id].price = Math.max(10, Math.floor(stocks[id].price * (1 + changeRate))); 
             
             let sign = changeRate >= 0 ? '▲' : '▼';
             let colorClass = changeRate >= 0 ? 'price-up' : 'price-down';
@@ -348,7 +426,6 @@
         });
         updateUI();
     }
-    // 5초마다 주가 갱신
     setInterval(updateStocks, 5000);
 
     function buyStock(id) {
@@ -359,7 +436,7 @@
             gameData.currency -= amount;
             let boughtShares = amount / stocks[id].price;
             stocks[id].shares += boughtShares;
-            inputEl.value = ''; // 입력창 초기화
+            inputEl.value = ''; 
             updateUI();
         } else {
             alert("보유 골드가 부족합니다!");
@@ -393,31 +470,30 @@
         document.getElementById('lotto-timer').innerText = `${lottoTime}초 남음`;
         
         if(lottoTime <= 0) {
-            // 추첨 시작
             if(myLotto !== null) {
-                if(Math.random() < 0.01) { // 1% 확률
+                if(Math.random() < 0.01) { 
+                    playSoundApplause(); // 🎵 당첨 팡파레
                     let reward = 0;
                     if(myLotto.type === 5000) reward = 500000;
                     else if(myLotto.type === 10000) reward = gameData.clickPower * 1000;
-                    else if(myLotto.type === 100000) reward = gameData.currency * 10; // 현재 보유골드의 10배
+                    else if(myLotto.type === 100000) reward = gameData.currency * 10; 
                     
                     alert(`🎉🎉 미쳤다!!! [${myLotto.name}] 로또 1등 당첨!! 🎉🎉\n보상: ${format(reward)}G 획득!`);
                     gameData.currency += reward;
                 } else {
-                    // 낙첨 시 거슬리는 알림 없이 UI만 업데이트
                     let statusEl = document.getElementById('lotto-status');
                     statusEl.innerText = "꽝... 다음 기회에";
                     statusEl.style.color = "#e74c3c";
                     setTimeout(() => { statusEl.innerText = "없음"; statusEl.style.color = "#2c3e50"; }, 3000);
                 }
-                myLotto = null; // 초기화
+                myLotto = null; 
                 updateUI();
             }
-            lottoTime = 60; // 타이머 리셋
+            lottoTime = 60; 
         }
     }, 1000);
 
-    // 자동 골드 생산 (0.1초마다)
+    // 자동 골드 생산
     setInterval(() => { 
         if (!gameData.isJailed && gameData.autoPower > 0) { 
             gameData.currency += gameData.autoPower / 10; 
