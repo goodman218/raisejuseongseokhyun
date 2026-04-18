@@ -27,6 +27,8 @@
         .right-stats { display: flex; gap: 12px; text-align: right; }
         #guide-btn { position: absolute; top: 15px; right: 15px; background: #e74c3c; color: white; width: 25px; height: 25px; border-radius: 50%; text-align: center; line-height: 25px; font-weight: bold; cursor: pointer; z-index: 20; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
 
+        #ticker { background-color: #34495e; color: #f1c40f; font-size: 0.85em; font-weight: bold; padding: 6px; text-align: center; overflow: hidden; white-space: nowrap; }
+
         /* --- 액션 영역 --- */
         #action-zone { flex: 1; background-color: #ecf0f1; display: flex; position: relative; overflow: hidden; }
         .click-area { flex: 1; height: 100%; display: flex; justify-content: center; align-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -64,12 +66,14 @@
         .district { fill: #b2bec3; stroke: #fff; stroke-width: 1.5; cursor: pointer; transition: 0.2s; }
         .district.owned { fill: #f1c40f; stroke: #e67e22; }
         .district.selected { stroke: #e74c3c; stroke-width: 3; }
+        .district.scammed { fill: #e74c3c; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.5; } }
         .river { fill: #74b9ff; }
         .map-text { font-size: 9px; font-weight: bold; fill: #2d3436; pointer-events: none; text-anchor: middle; }
 
         .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; justify-content: center; align-items: center; z-index: 100; }
         #jail-overlay { background: rgba(0,0,0,0.85); color: red; flex-direction: column; font-weight: bold; font-size: 2em; text-align: center; }
-        #guide-overlay, #mission-overlay { background: rgba(0,0,0,0.7); }
+        #guide-overlay, #mission-overlay, #disaster-overlay, #election-overlay { background: rgba(0,0,0,0.7); }
         .guide-box { background: white; width: 85%; padding: 20px; border-radius: 10px; max-height: 80%; overflow-y: auto; text-align: center; }
     </style>
 </head>
@@ -80,6 +84,32 @@
         🚨 경찰 검거 🚨<br>
         <span style="font-size: 0.5em; color: white; margin-top: 10px;">은행 습격 실패!</span>
         <span id="jail-timer" style="font-size: 0.6em; color: #f1c40f; margin-top: 10px;">30초 남음</span>
+    </div>
+
+    <div id="disaster-overlay" class="overlay">
+        <div class="guide-box">
+            <h2 style="margin-top:0; color: #2ecc71;">💸 긴급 재난지원금</h2>
+            <p style="font-size: 0.9em; line-height: 1.5; color: #333;">
+                파산 위기에 처한 당신을 위해 국가가 나섰습니다.<br>
+                <b>지원금을 수령하시겠습니까?</b><br>
+                <span style="font-size: 0.8em; color: #e74c3c;">(단, 수령 시 60초간 모든 세금이 2배가 됩니다.)</span>
+            </p>
+            <button class="buy-btn" style="width: 100%; margin-top: 10px;" onclick="acceptDisaster()">수령하기</button>
+            <button class="buy-btn" style="width: 100%; margin-top: 5px; background: #95a5a6;" onclick="document.getElementById('disaster-overlay').style.display='none'">거부하기</button>
+        </div>
+    </div>
+
+    <div id="election-overlay" class="overlay">
+        <div class="guide-box">
+            <h2 style="margin-top:0; color: #3498db;">🗳️ 국회의원 선거</h2>
+            <p style="font-size: 0.9em; line-height: 1.5; color: #333;">
+                정경유착의 시간입니다. 기부금(전재산 3%)을 내고 후원할 후보를 선택하세요.<br>
+                <b>당선 시 60초간 세금 전면 면제!<br>낙선 시 세무조사 (재산 10% 압류)</b>
+            </p>
+            <button class="buy-btn" style="width: 100%; margin-top: 10px; background: #3498db;" onclick="voteElection(1)">기호 1번 후원하기</button>
+            <button class="buy-btn" style="width: 100%; margin-top: 5px; background: #e74c3c;" onclick="voteElection(2)">기호 2번 후원하기</button>
+            <button class="buy-btn" style="width: 100%; margin-top: 5px; background: #95a5a6;" onclick="document.getElementById('election-overlay').style.display='none'">기권</button>
+        </div>
     </div>
 
     <div id="guide-overlay" class="overlay">
@@ -99,9 +129,19 @@
                 - 코인은 최대 5배 레버리지 가능(-80~99%). -100% 도달 시 원금 청산됩니다.<br>
                 <b>5. 부동산:</b><br>
                 - 서울 25개 구에 건물을 사서 영구적인 월세를 받으세요. 실시간 매도도 가능합니다.<br>
-                <b style="color:#e74c3c;">6. 인생 한방:</b><br>
-                - 은행 습격: 성공률 30%. 성공 시 전재산 2.5배 떡상, 실패 시 30초 구속!<br>
-                - 로또: 1% 확률. <b>'ㅈ되는 로또'</b> 당첨 시 전재산이 10배가 됩니다!
+                <b>6. 인생 한방:</b><br>
+                - 은행 습격: 성공률 30%. 전재산 2.5배 떡상 vs 30초 구속!<br>
+                - 로또: 1% 확률 당첨.<br>
+                <hr style="margin: 10px 0;">
+                <b style="color:#e74c3c;">7. 은행 및 도박:</b><br>
+                - 은행 예금: 이자 지급, 중도해지 시 5% 수수료.<br>
+                - 도박장: 전재산을 건 50% 확률 홀짝 승부.<br>
+                <b style="color:#e74c3c;">8. 유료 리딩방:</b><br>
+                - 80% 확률로 낚시 정보를 제공합니다.<br>
+                <b style="color:#e74c3c;">9. 국회의원 선거:</b><br>
+                - 당선 시 60초 세금 면제, 낙선 시 세무조사(재산 10% 압류).<br>
+                <b style="color:#e74c3c;">10. 재난지원금 및 기타:</b><br>
+                - 파산 시 지원금 지급 (이후 세금 2배 페널티). 부동산 전세 사기 주의!
             </div>
             <button class="buy-btn" style="width: 100%; margin-top: 15px; background: #3498db; padding: 10px;" onclick="toggleGuide(false)">확인</button>
         </div>
@@ -139,6 +179,7 @@
                 <div>클릭당 골드<br><span id="cpc-display" class="stat-val">1</span></div>
             </div>
         </div>
+        <div id="ticker">🗞️ 뉴스: 게임이 시작되었습니다. 투자는 본인의 책임입니다.</div>
 
         <div id="action-zone">
             <div class="click-area" onmousedown="pressJuseong(event)" onmouseup="releaseJuseong()" onmouseleave="releaseJuseong()" ontouchstart="pressJuseong(event)" ontouchend="releaseJuseong()">
@@ -172,7 +213,6 @@
                 <div id="map-container">
                     <svg viewBox="0 0 400 200" style="width:100%; height:100%;">
                         <rect class="river" x="0" y="100" width="400" height="15" />
-                        
                         <rect class="district" id="dist-eunpyeong" x="25" y="20" width="45" height="35" rx="3" onclick="selectDistrict('eunpyeong')" />
                         <text class="map-text" x="47.5" y="41">은평</text>
                         <rect class="district" id="dist-jongno" x="75" y="25" width="50" height="35" rx="3" onclick="selectDistrict('jongno')" />
@@ -249,6 +289,33 @@
                         <button class="buy-btn" style="flex:1; background: #9b59b6; padding: 5px;" onclick="buyLotto(100000, 'ㅈ되는')">ㅈ되는</button>
                     </div>
                 </div>
+                
+                <div class="card" style="border: 2px solid #f39c12; margin-top:15px;">
+                    <h3>🏦 안전 은행 <span style="font-size:0.7em; color:#f39c12;">(이자 0.5%, 해지 -5%)</span></h3>
+                    <p style="font-size: 0.8em; color: #666; margin-bottom: 5px;">현재 예금: <span id="bank-val" style="font-weight:bold; color:#2c3e50;">0</span>G</p>
+                    <div style="display:flex; gap:5px;">
+                        <input type="number" id="in-bank" class="stock-input" placeholder="골드">
+                        <button class="buy-btn" style="background: #f39c12;" onclick="tradeBank(true)">입금</button>
+                        <button class="buy-btn" style="background: #e67e22;" onclick="tradeBank(false)">출금</button>
+                    </div>
+                </div>
+
+                <div class="card" style="border: 2px solid #8e44ad;">
+                    <h3>🎲 불법 도박장 <span style="font-size:0.7em; color:#8e44ad;">(홀짝 50%)</span></h3>
+                    <div style="display:flex; gap:5px;">
+                        <input type="number" id="in-gamble" class="stock-input" placeholder="배팅액">
+                        <button class="buy-btn" style="flex:1; background: #9b59b6;" onclick="playGamble('odd')">홀 (x2)</button>
+                        <button class="buy-btn" style="flex:1; background: #8e44ad;" onclick="playGamble('even')">짝 (x2)</button>
+                    </div>
+                </div>
+
+                <div class="card" style="border: 2px solid #34495e;">
+                    <h3>🤫 유료 리딩방 <span style="font-size:0.7em; color:#34495e;">(가입비 10만G)</span></h3>
+                    <p id="reading-info" style="font-size: 0.8em; color: #e74c3c; margin-bottom: 5px;">"다음 턴의 정보를 미리 알려드립니다."</p>
+                    <button class="buy-btn" style="background: #2c3e50; width:100%;" onclick="buyReading()">비밀 정보 구매</button>
+                </div>
+
+                <button class="buy-btn" style="background: #c0392b; width: 100%; margin-top: 20px; padding: 15px; font-size:1.1em; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="commitSuicide()">자살하기</button>
             </div>
         </div>
     </div>
@@ -269,8 +336,10 @@
         else if(type==='win'){ const notes=[523,659,783,1046]; notes.forEach((f,i)=>{ const o=audioCtx.createOscillator(); const g=audioCtx.createGain(); o.type='square'; o.connect(g); g.connect(audioCtx.destination); o.frequency.setValueAtTime(f, now+(i*0.1)); g.gain.setValueAtTime(0.1, now+(i*0.1)); g.gain.exponentialRampToValueAtTime(0.01, now+(i*0.1)+0.4); o.start(now+(i*0.1)); o.stop(now+(i*0.1)+0.4); }); }
     }
 
-    let gameData = { currency: 0, clickPower: 1, autoPower: 0, isJailed: false };
+    let gameData = { currency: 0, clickPower: 1, autoPower: 0, isJailed: false, bank: 0 };
     let seokDeg = 0;
+    let taxPenaltyTimer = 0; // 재난지원금 등 페널티
+    let taxFreeTimer = 0; // 선거 당선 등 혜택
 
     let upgrades = [
         { id: 'j1', category: 'juseong', name: "저세상 팔굽혀펴기", target: "click", power: 1, baseCost: 50, level: 0, desc: "클릭당 골드 +1" },
@@ -286,55 +355,79 @@
     ];
 
     let markets = {
-        k: [{ id:'samseon', name:'삼선전자', price:1000, shares:0, invested:0, change:0 }, { id:'okhynix', name:'OK하이닉스', price:1000, shares:0, invested:0, change:0 }, { id:'hyundai', name:'헌대자동차', price:1000, shares:0, invested:0, change:0 }],
-        us: [{ id:'tesla', name:'테슬아', price:5000, shares:0, invested:0, change:0 }, { id:'nike', name:'냐이키', price:5000, shares:0, invested:0, change:0 }, { id:'snp', name:'S&P 500', price:5000, shares:0, invested:0, change:0 }],
-        crypto: [{ id:'btc', name:'비토코인', price:50000, invested:0, lever:1, change:0 }, { id:'doge', name:'도자코인', price:50000, invested:0, lever:1, change:0 }, { id:'eth', name:'이더려움', price:50000, invested:0, lever:1, change:0 }]
+        k: [
+            { id:'samseon', name:'삼선전자', price:1000, shares:0, invested:0, change:0 }, { id:'okhynix', name:'OK하이닉스', price:1000, shares:0, invested:0, change:0 }, { id:'hyundai', name:'헌대자동차', price:1000, shares:0, invested:0, change:0 },
+            { id:'celltrion', name:'셸트리온', price:1000, shares:0, invested:0, change:0 }, { id:'hanmi', name:'한미반도체', price:1000, shares:0, invested:0, change:0 }, { id:'hanwha', name:'햔화', price:1000, shares:0, invested:0, change:0 },
+            { id:'lotte', name:'롯뎨', price:1000, shares:0, invested:0, change:0 }, { id:'cjj', name:'CJJ', price:1000, shares:0, invested:0, change:0 }, { id:'yourfinance', name:'너희금융', price:1000, shares:0, invested:0, change:0 }, { id:'citizenfinance', name:'시민금융', price:1000, shares:0, invested:0, change:0 }
+        ],
+        us: [
+            { id:'tesla', name:'테슬아', price:5000, shares:0, invested:0, change:0 }, { id:'nike', name:'냐이키', price:5000, shares:0, invested:0, change:0 }, { id:'snp', name:'S&P 500', price:5000, shares:0, invested:0, change:0 },
+            { id:'nvidia', name:'엔디비야', price:5000, shares:0, invested:0, change:0 }, { id:'jpmorgan', name:'jp모견', price:5000, shares:0, invested:0, change:0 }, { id:'amazon', name:'아마죤', price:5000, shares:0, invested:0, change:0 },
+            { id:'trump', name:'트럼푸', price:5000, shares:0, invested:0, change:0 }, { id:'meta', name:'몌타', price:5000, shares:0, invested:0, change:0 }, { id:'mcdonald', name:'막도날드', price:5000, shares:0, invested:0, change:0 }, { id:'cocacola', name:'쿄캬콜라', price:5000, shares:0, invested:0, change:0 }
+        ],
+        crypto: [
+            { id:'btc', name:'비토코인', price:50000, invested:0, lever:1, change:0 }, { id:'doge', name:'도자코인', price:50000, invested:0, lever:1, change:0 }, { id:'eth', name:'이더려움', price:50000, invested:0, lever:1, change:0 }
+        ]
     };
 
     let realEstate = [
-        { id: 'dobong', name: '도봉구', cost: 5000000, rent: 10000, owned: false, buyPrice: 0 },
-        { id: 'gangbuk', name: '강북구', cost: 8000000, rent: 15000, owned: false, buyPrice: 0 },
-        { id: 'jungnang', name: '중랑구', cost: 10000000, rent: 20000, owned: false, buyPrice: 0 },
-        { id: 'nowon', name: '노원구', cost: 12000000, rent: 25000, owned: false, buyPrice: 0 },
-        { id: 'eunpyeong', name: '은평구', cost: 15000000, rent: 30000, owned: false, buyPrice: 0 },
-        { id: 'geumcheon', name: '금천구', cost: 18000000, rent: 40000, owned: false, buyPrice: 0 },
-        { id: 'guro', name: '구로구', cost: 22000000, rent: 50000, owned: false, buyPrice: 0 },
-        { id: 'gwanak', name: '관악구', cost: 25000000, rent: 60000, owned: false, buyPrice: 0 },
-        { id: 'seodaemun', name: '서대문구', cost: 30000000, rent: 70000, owned: false, buyPrice: 0 },
-        { id: 'gangseo', name: '강서구', cost: 35000000, rent: 85000, owned: false, buyPrice: 0 },
-        { id: 'seongbuk', name: '성북구', cost: 40000000, rent: 100000, owned: false, buyPrice: 0 },
-        { id: 'dongdaemun', name: '동대문구', cost: 50000000, rent: 120000, owned: false, buyPrice: 0 },
-        { id: 'yangcheon', name: '양천구', cost: 60000000, rent: 150000, owned: false, buyPrice: 0 },
-        { id: 'dongjak', name: '동작구', cost: 80000000, rent: 200000, owned: false, buyPrice: 0 },
-        { id: 'mapo', name: '마포구', cost: 100000000, rent: 250000, owned: false, buyPrice: 0 },
-        { id: 'jongno', name: '종로구', cost: 120000000, rent: 300000, owned: false, buyPrice: 0 },
-        { id: 'jung', name: '중구', cost: 150000000, rent: 400000, owned: false, buyPrice: 0 },
-        { id: 'gwangjin', name: '광진구', cost: 200000000, rent: 550000, owned: false, buyPrice: 0 },
-        { id: 'gangdong', name: '강동구', cost: 220000000, rent: 600000, owned: false, buyPrice: 0 },
-        { id: 'seongdong', name: '성동구', cost: 300000000, rent: 800000, owned: false, buyPrice: 0 },
-        { id: 'yeongdeungpo', name: '영등포구', cost: 500000000, rent: 1500000, owned: false, buyPrice: 0 },
-        { id: 'songpa', name: '송파구', cost: 800000000, rent: 2500000, owned: false, buyPrice: 0 },
-        { id: 'yongsan', name: '용산구', cost: 1500000000, rent: 5000000, owned: false, buyPrice: 0 },
-        { id: 'seocho', name: '서초구', cost: 5000000000, rent: 18000000, owned: false, buyPrice: 0 },
-        { id: 'gangnam', name: '강남구', cost: 10000000000, rent: 40000000, owned: false, buyPrice: 0 }
+        { id: 'dobong', name: '도봉구', cost: 5000000, rent: 10000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'gangbuk', name: '강북구', cost: 8000000, rent: 15000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'jungnang', name: '중랑구', cost: 10000000, rent: 20000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'nowon', name: '노원구', cost: 12000000, rent: 25000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'eunpyeong', name: '은평구', cost: 15000000, rent: 30000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'geumcheon', name: '금천구', cost: 18000000, rent: 40000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'guro', name: '구로구', cost: 22000000, rent: 50000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'gwanak', name: '관악구', cost: 25000000, rent: 60000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'seodaemun', name: '서대문구', cost: 30000000, rent: 70000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'gangseo', name: '강서구', cost: 35000000, rent: 85000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'seongbuk', name: '성북구', cost: 40000000, rent: 100000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'dongdaemun', name: '동대문구', cost: 50000000, rent: 120000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'yangcheon', name: '양천구', cost: 60000000, rent: 150000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'dongjak', name: '동작구', cost: 80000000, rent: 200000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'mapo', name: '마포구', cost: 100000000, rent: 250000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'jongno', name: '종로구', cost: 120000000, rent: 300000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'jung', name: '중구', cost: 150000000, rent: 400000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'gwangjin', name: '광진구', cost: 200000000, rent: 550000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'gangdong', name: '강동구', cost: 220000000, rent: 600000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'seongdong', name: '성동구', cost: 300000000, rent: 800000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'yeongdeungpo', name: '영등포구', cost: 500000000, rent: 1500000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'songpa', name: '송파구', cost: 800000000, rent: 2500000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'yongsan', name: '용산구', cost: 1500000000, rent: 5000000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'seocho', name: '서초구', cost: 5000000000, rent: 18000000, owned: false, buyPrice: 0, scamTimer: 0 },
+        { id: 'gangnam', name: '강남구', cost: 10000000000, rent: 40000000, owned: false, buyPrice: 0, scamTimer: 0 }
     ];
 
     let lottoTime = 60; let myLotto = null;
-    let jongbuTimer = 60; // 60초마다 종부세 납부
+    let jongbuTimer = 60; 
+    let bankTimer = 60;
+    let electionTimer = 600;
+
+    const newsList = ["찌라시: 주성이와 석현이 불화설 제기", "현재 한강 물 온도: 4.2°C... 아직은 춥습니다.", "국세청, 개미 투자자 대상 세무조사 예고", "리딩방 피해자 속출... '믿었는데 다 잃어'", "선거철 기부금 논란... '투자금인지 뒷돈인지'"];
 
     function format(num) { return Math.floor(num).toLocaleString('ko-KR'); }
     function checkAccountant() { return upgrades.every(u => u.level >= 50); }
-    function getTaxRate(baseRate) { return checkAccountant() ? baseRate / 2 : baseRate; }
+    function getTaxRate(baseRate) { 
+        if(taxFreeTimer > 0) return 0;
+        let rate = checkAccountant() ? baseRate / 2 : baseRate; 
+        if(taxPenaltyTimer > 0) rate *= 2;
+        return rate;
+    }
 
     function updateUI() { 
         if(gameData.isJailed) return; 
         document.getElementById('currency-display').innerText = format(gameData.currency); 
         document.getElementById('gps-display').innerText = format(gameData.autoPower); 
         document.getElementById('cpc-display').innerText = format(gameData.clickPower); 
+        document.getElementById('bank-val').innerText = format(gameData.bank);
         upgrades.forEach(u => { 
             const btn = document.getElementById(`btn-${u.id}`); 
             if(btn) btn.disabled = gameData.currency < Math.floor(u.baseCost * Math.pow(1.15, u.level)); 
         }); 
+        
+        let effectiveAuto = upgrades.filter(u=>u.target==='auto').reduce((sum,u)=>sum+(u.level*u.power), 0);
+        realEstate.filter(e=>e.owned && e.scamTimer <= 0).forEach(e=>effectiveAuto += e.rent);
+        gameData.autoPower = effectiveAuto;
     }
     
     function showPrologue() { initAudio(); document.getElementById('start-screen').classList.remove('active'); document.getElementById('prologue-screen').classList.add('active'); }
@@ -360,11 +453,16 @@
         if(t === 'market') renderMarkets();
     }
 
+    function floatText(msg, x, y, color) {
+        const t = document.createElement('div'); t.className = 'floating-text'; t.innerText = msg; t.style.left = x; t.style.top = y; t.style.color = color; document.body.appendChild(t); setTimeout(() => t.remove(), 1000); 
+    }
+
     function processClick(e, color) { 
         if(gameData.isJailed) return; 
         let x = e.clientX || e.touches[0].clientX; let y = e.clientY || e.touches[0].clientY; 
         playSfx('coin'); gameData.currency += gameData.clickPower; 
-        const t = document.createElement('div'); t.className = 'floating-text'; t.innerText = `+${format(gameData.clickPower)}`; t.style.left = `${x-20}px`; t.style.top = `${y-20}px`; t.style.color = color; document.body.appendChild(t); setTimeout(() => t.remove(), 800); updateUI(); 
+        floatText(`+${format(gameData.clickPower)}`, `${x-20}px`, `${y-20}px`, color);
+        updateUI(); 
     }
     function pressJuseong(e) { if(e.type==='touchstart')e.preventDefault(); if(!gameData.isJailed){ processClick(e, '#f1c40f'); document.getElementById('juseong-img').src = 'juseong_down.png'; } }
     function releaseJuseong() { document.getElementById('juseong-img').src = 'juseong_up.png'; }
@@ -374,7 +472,6 @@
         const u = upgrades.find(x => x.id === id); let cost = Math.floor(u.baseCost * Math.pow(1.15, u.level)); 
         if (gameData.currency >= cost) { 
             gameData.currency -= cost; u.level++; 
-            if (u.target === 'click') gameData.clickPower += u.power; else gameData.autoPower += u.power; 
             document.getElementById(`btn-${u.id}`).innerText = `${format(Math.floor(u.baseCost * Math.pow(1.15, u.level)))}G`; 
             document.getElementById(`lv-${u.id}`).innerText = `Lv.${u.level}`; 
             updateUI(); 
@@ -409,24 +506,32 @@
     }
     function createCryptoHTML(c) { 
         let cls = c.change >= 0 ? 'price-up' : 'price-down'; 
-        return `<div class="card market-item"><div class="item-row"><b>${c.name}</b> <span class="stock-price ${cls}">${format(c.price)} ${c.change>=0?'▲':'▼'} ${Math.abs(c.change)}%</span></div><div style="font-size:0.8em;margin:5px 0;">배수: <button class="lever-btn ${c.lever===1?'active':''}" onclick="setLever('${c.id}',1)">1x</button><button class="lever-btn ${c.lever===3?'active':''}" onclick="setLever('${c.id}',3)">3x</button><button class="lever-btn ${c.lever===5?'active':''}" onclick="setLever('${c.id}',5)">5x</button></div><div style="font-size:0.8em;margin-bottom:5px;">투자: <span class="price-up">${format(c.invested)}G</span></div><div style="display:flex;gap:5px;"><input type="number" id="in-${c.id}" class="stock-input" placeholder="골드"><button class="buy-btn" onclick="tradeCrypto('${c.id}',true)">베팅</button><button class="buy-btn" style="background:#e74c3c" onclick="tradeCrypto('${c.id}',false)">익절</button></div></div>`; 
+        return `<div class="card market-item"><div class="item-row"><b>${c.name}</b> <span class="stock-price ${cls}">${format(c.price)} ${c.change>=0?'▲':'▼'} ${Math.abs(c.change)}%</span></div><div style="font-size:0.8em;margin:5px 0;">배수: <button class="lever-btn ${c.lever===1?'active':''}" onclick="setLever('${c.id}',1)">1x</button><button class="lever-btn ${c.lever===3?'active':''}" onclick="setLever('${c.id}',3)">3x</button><button class="lever-btn ${c.lever===5?'active':''}" onclick="setLever('${c.id}',5)">5x</button></div><div style="font-size:0.8em;margin-bottom:5px;">투자금: <span class="price-up">${format(c.invested)}G</span></div><div style="display:flex;gap:5px;"><input type="number" id="in-${c.id}" class="stock-input" placeholder="골드"><button class="buy-btn" onclick="tradeCrypto('${c.id}',true)">베팅</button><button class="buy-btn" style="background:#e74c3c" onclick="tradeCrypto('${c.id}',false)">익절</button></div></div>`; 
     }
 
-    // 주식/코인 가격 변동 (8초 주기로 변경 및 수치 변경)
+    // 8초 시장 갱신 및 전광판 로직
     setInterval(() => { 
+        // 국장: -30% ~ +35%
         markets.k.forEach(s => { let ch = (Math.random()*0.65)-0.30; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); 
+        // 미장: -45% ~ +55%
         markets.us.forEach(s => { let ch = (Math.random()*1.00)-0.45; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); 
+        // 코인: 시세는 -80% ~ +99% 고정. 레버리지는 수익금에만 반영.
         markets.crypto.forEach(c => { 
-            let bCh = (Math.random()*1.79)-0.80; let lCh = bCh*c.lever; 
+            let bCh = (Math.random()*1.79)-0.80; // 베이스 변동
+            let lCh = bCh * c.lever; // 레버리지 적용 변동 (계좌용)
             if(c.invested > 0){ 
-                c.invested = Math.floor(c.invested*(1+lCh)); 
+                c.invested = Math.floor(c.invested * (1 + lCh)); 
                 if(c.invested <= 0){ 
-                    c.invested=0; 
+                    c.invested = 0; 
                     alert(`🚨 [청산] ${c.name} 투자금이 증발했습니다.`); 
                 } 
             } 
-            c.price = Math.max(10, Math.floor(c.price*(1+bCh))); c.change = Math.floor(lCh*100); 
+            c.price = Math.max(10, Math.floor(c.price * (1 + bCh))); 
+            c.change = Math.floor(bCh * 100); 
         }); 
+        
+        document.getElementById('ticker').innerText = newsList[Math.floor(Math.random()*newsList.length)];
+
         if(document.getElementById('tab-market').classList.contains('active')) renderMarkets(); 
     }, 8000);
 
@@ -438,7 +543,7 @@
         } else { 
             let currentVal = Math.floor(s.shares * s.price);
             let profit = currentVal - s.invested;
-            let tax = profit > 0 ? profit * getTaxRate(0.22) : 0;
+            let tax = profit > 0 ? Math.floor(profit * getTaxRate(0.22)) : 0;
             gameData.currency += (currentVal - tax); 
             s.shares = 0; s.invested = 0;
             if(tax > 0) alert(`[금투세 납부] 수익에 대한 세금 ${format(tax)}G가 징수되었습니다.`);
@@ -454,25 +559,28 @@
             let a = parseInt(document.getElementById(`in-${id}`).value); 
             if(a > 0 && gameData.currency >= a){ gameData.currency -= a; c.invested += a; } 
         } else { 
-            let profit = c.invested * 0.5; 
-            let tax = c.invested > 0 ? c.invested * 0.1 * getTaxRate(0.22) : 0;
+            let profit = c.invested; // (간단화: 원금 포함 전체 금액에서 차익만큼 금투세 징수를 위해선 별도 원금 기록 필요하나, 편의상 전액 출금)
+            let tax = profit > 0 ? Math.floor(profit * 0.1 * getTaxRate(0.22)) : 0; // 임의 과세 적용
             gameData.currency += (c.invested - tax); 
             c.invested = 0; 
-            if(tax > 0) alert(`[금투세 납부] 수익에 대한 세금 ${format(tax)}G가 징수되었습니다.`);
+            if(tax > 0) alert(`[금투세 납부] 수익 세금 ${format(tax)}G 징수.`);
         } 
         renderMarkets(); updateUI(); 
     }
 
+    // --- 부동산 및 사기 로직 ---
     function selectDistrict(id) { 
         const d = realEstate.find(x => x.id === id); 
         document.querySelectorAll('.district').forEach(el => el.classList.remove('selected')); 
         document.getElementById(`dist-${id}`).classList.add('selected'); 
         
         let profit = d.owned ? d.cost - d.buyPrice : 0;
-        let tax = profit > 0 ? profit * getTaxRate(0.20) : 0;
+        let tax = profit > 0 ? Math.floor(profit * getTaxRate(0.20)) : 0;
+        let warning = d.scamTimer > 0 ? `<p style="color:red;font-weight:bold;">🚨 전세 사기 발생! 월세 일시 정지 (${d.scamTimer}초)</p>` : '';
 
         document.getElementById('district-info').innerHTML = `
             <h3 style="margin:0 0 5px 0;">${d.name} ${d.owned?'✅':''}</h3>
+            ${warning}
             <p style="font-size:0.85em;margin:5px 0;">시세: ${format(d.cost)}G | 월세: <span style="color:#e74c3c;font-weight:bold;">+${format(d.rent)}G</span></p>
             <div style="display:flex; gap:5px;">
                 <button class="buy-btn" style="flex:1;" onclick="buyEstate('${id}')" ${gameData.currency < (d.cost*1.05) || d.owned ? 'disabled' : ''}>매수 (취득세 5%)</button>
@@ -480,61 +588,198 @@
             </div>
         `; 
     }
+    
     function buyEstate(id) { 
         const d = realEstate.find(x => x.id === id); 
-        let totalCost = d.cost * 1.05; 
+        let totalCost = Math.floor(d.cost * 1.05); 
+        if(taxFreeTimer > 0) totalCost = d.cost; // 세금 면제
+
         if(gameData.currency >= totalCost && !d.owned){ 
             gameData.currency -= totalCost; 
             d.owned = true; d.buyPrice = d.cost; 
-            gameData.autoPower += d.rent; 
             document.getElementById(`dist-${id}`).classList.add('owned'); 
             playSfx('win'); selectDistrict(id); updateUI(); 
         } 
     }
+    
     function sellEstate(id) {
         const d = realEstate.find(x => x.id === id);
         if(d.owned) {
             let profit = d.cost - d.buyPrice;
-            let tax = profit > 0 ? profit * getTaxRate(0.20) : 0;
+            let tax = profit > 0 ? Math.floor(profit * getTaxRate(0.20)) : 0;
             gameData.currency += (d.cost - tax);
-            d.owned = false;
-            gameData.autoPower -= d.rent;
+            d.owned = false; d.scamTimer = 0;
             document.getElementById(`dist-${id}`).classList.remove('owned');
+            document.getElementById(`dist-${id}`).classList.remove('scammed');
             if(tax > 0) alert(`[양도세 납부] 부동산 차익 세금 ${format(tax)}G가 징수되었습니다.`);
             selectDistrict(id); updateUI();
         }
     }
 
+    // 부동산 시세 갱신 및 전세 사기 이벤트 (10초 주기)
     setInterval(() => { 
-        realEstate.forEach(e => { e.cost = Math.floor(e.cost * (1 + (Math.random()*0.15 - 0.05))); }); 
+        realEstate.forEach(e => { 
+            e.cost = Math.floor(e.cost * (1 + (Math.random()*0.15 - 0.05))); 
+            // 전세 사기 발생 확률 (5%)
+            if(e.owned && e.scamTimer <= 0 && Math.random() < 0.05) {
+                e.scamTimer = 60; // 60초간 월세 정지
+                document.getElementById(`dist-${e.id}`).classList.add('scammed');
+                floatText("🚨 전세 사기!", "50%", "50%", "#e74c3c");
+            }
+        }); 
         if(document.getElementById('tab-estate').classList.contains('active')){ 
             let sel = document.querySelector('.district.selected'); 
             if(sel) selectDistrict(sel.id.replace('dist-','')); 
         } 
     }, 10000);
 
-    setInterval(() => {
+    // --- 기타 메뉴 컨텐츠 (은행, 도박, 리딩, 자살) ---
+    function tradeBank(isDeposit) {
+        let a = parseInt(document.getElementById('in-bank').value);
+        if(isNaN(a) || a <= 0) return;
+        if(isDeposit) {
+            if(gameData.currency >= a) { gameData.currency -= a; gameData.bank += a; }
+        } else {
+            if(gameData.bank >= a) { 
+                let fee = Math.floor(a * 0.05); // 5% 해지 수수료
+                gameData.bank -= a; 
+                gameData.currency += (a - fee); 
+            }
+        }
+        updateUI();
+    }
+
+    function playGamble(choice) {
+        let a = parseInt(document.getElementById('in-gamble').value);
+        if(isNaN(a) || a <= 0 || gameData.currency < a) return;
+        gameData.currency -= a;
+        let result = Math.random() < 0.5 ? 'odd' : 'even';
+        if(choice === result) {
+            gameData.currency += (a * 2);
+            alert("도박 성공! 원금의 2배를 획득했습니다.");
+            playSfx('win');
+        } else {
+            alert("도박 실패... 배팅액을 모두 잃었습니다.");
+        }
+        updateUI();
+    }
+
+    function buyReading() {
+        if(gameData.currency >= 100000) {
+            gameData.currency -= 100000;
+            let target = markets.crypto[Math.floor(Math.random()*markets.crypto.length)].name;
+            let msg = Math.random() < 0.2 ? "떡상합니다!" : "폭락합니다!"; // 사실 대부분 낚시
+            document.getElementById('reading-info').innerText = `[비밀정보] 다음 턴에 ${target} 코인이 ${msg}`;
+            updateUI();
+        } else {
+            alert("가입비(10만G)가 부족합니다.");
+        }
+    }
+
+    function commitSuicide() {
+        if(confirm("정말로 모든 것을 포기하시겠습니까? (전체 데이터 초기화)")) {
+            alert(`당신은 차가운 한강 물속으로 뛰어들었습니다...\n남겨진 자산: ${format(gameData.currency)}G\n당신의 이름은 다음 날 신문 사회면 구석에 한 줄로 기록되었습니다.`);
+            location.reload(); // 심플한 초기화
+        }
+    }
+
+    function robBank() { if(confirm("은행 습격? 성공30%")){ if(Math.random()<0.3){ gameData.currency += gameData.currency*1.5; playSfx('win'); alert("대성공!"); } else { playSfx('siren'); gameData.isJailed=true; document.getElementById('jail-overlay').style.display='flex'; let t=30; let i=setInterval(()=>{ t--; document.getElementById('jail-timer').innerText=`${t}초 남음`; if(t<=0){ clearInterval(i); gameData.isJailed=false; document.getElementById('jail-overlay').style.display='none'; } },1000); } updateUI(); } }
+    function buyLotto(c, n) { if(myLotto) return; if(gameData.currency >= c){ gameData.currency -= c; myLotto = { c, n }; document.getElementById('lotto-status').innerText = `${n} 로또 대기중...`; updateUI(); } }
+    
+    // --- 타이머 이벤트 (1초 주기) ---
+    setInterval(() => { 
+        // 로또 처리
+        lottoTime--; document.getElementById('lotto-timer').innerText = `${lottoTime}초 남음`; 
+        if(lottoTime <= 0){ 
+            if(myLotto){ 
+                if(Math.random()<0.01){ 
+                    let r=0; if(myLotto.c===5000) r=500000; else if(myLotto.c===10000) r=gameData.clickPower*1000; else r=gameData.currency*10; 
+                    gameData.currency += r; playSfx('win'); alert(`당첨! ${format(r)}G!`); 
+                } else { 
+                    document.getElementById('lotto-status').innerText = "낙첨..."; setTimeout(()=>document.getElementById('lotto-status').innerText="없음", 3000); 
+                } 
+                myLotto = null; updateUI(); 
+            } 
+            lottoTime = 60; 
+        }
+
+        // 종부세 납부
         jongbuTimer--;
         if(jongbuTimer <= 0) {
             let totalEstateVal = realEstate.filter(e => e.owned).reduce((sum, e) => sum + e.cost, 0);
             if(totalEstateVal >= 5000000000) { 
-                let tax = totalEstateVal * getTaxRate(0.02);
+                let tax = Math.floor(totalEstateVal * getTaxRate(0.02));
                 gameData.currency -= tax;
-                const t = document.createElement('div');
-                t.className = 'floating-text';
-                t.innerText = `종부세 납부\n-${format(tax)}`;
-                t.style.left = `50%`; t.style.top = `30%`; t.style.transform = `translateX(-50%)`;
-                t.style.color = `#e74c3c`; t.style.fontSize = `1.2em`; t.style.textAlign = `center`;
-                document.body.appendChild(t); setTimeout(() => t.remove(), 1500);
+                floatText(`종부세 납부\n-${format(tax)}`, "50%", "30%", "#e74c3c");
             }
             jongbuTimer = 60;
         }
+
+        // 은행 이자 지급 (60초 주기 재활용)
+        bankTimer--;
+        if(bankTimer <= 0) {
+            if(gameData.bank > 0) {
+                let interest = Math.floor(gameData.bank * (Math.random() * 0.005 + 0.005)); // 0.5% ~ 1%
+                gameData.bank += interest;
+                updateUI();
+            }
+            bankTimer = 60;
+        }
+
+        // 선거 이벤트 팝업
+        electionTimer--;
+        if(electionTimer <= 0 && gameData.currency > 1000) {
+            document.getElementById('election-overlay').style.display = 'flex';
+            electionTimer = 600;
+        }
+
+        // 재난지원금 체크 (10초마다 체크)
+        if(electionTimer % 10 === 0 && gameData.currency < 1000) {
+            if(Math.random() < 0.2 && document.getElementById('disaster-overlay').style.display !== 'flex') {
+                document.getElementById('disaster-overlay').style.display = 'flex';
+            }
+        }
+
+        // 페널티 및 혜택 타이머 감소
+        if(taxPenaltyTimer > 0) { taxPenaltyTimer--; document.getElementById('ticker').innerText = `🚨 특별 증세 기간: 모든 세금 2배 (${taxPenaltyTimer}초)`; }
+        if(taxFreeTimer > 0) { taxFreeTimer--; document.getElementById('ticker').innerText = `⭐ 선거 당선 효과: 세금 면제 (${taxFreeTimer}초)`; }
+        
+        // 부동산 사기 타이머 감소
+        realEstate.forEach(e => {
+            if(e.scamTimer > 0) {
+                e.scamTimer--;
+                if(e.scamTimer <= 0) document.getElementById(`dist-${e.id}`).classList.remove('scammed');
+            }
+        });
+
     }, 1000);
 
-    function robBank() { if(confirm("은행 습격? 성공30%")){ if(Math.random()<0.3){ gameData.currency += gameData.currency*1.5; playSfx('win'); alert("대성공!"); } else { playSfx('siren'); gameData.isJailed=true; document.getElementById('jail-overlay').style.display='flex'; let t=30; let i=setInterval(()=>{ t--; document.getElementById('jail-timer').innerText=`${t}초 남음`; if(t<=0){ clearInterval(i); gameData.isJailed=false; document.getElementById('jail-overlay').style.display='none'; } },1000); } updateUI(); } }
-    function buyLotto(c, n) { if(myLotto) return; if(gameData.currency >= c){ gameData.currency -= c; myLotto = { c, n }; document.getElementById('lotto-status').innerText = `${n} 로또 대기중...`; updateUI(); } }
-    setInterval(() => { lottoTime--; document.getElementById('lotto-timer').innerText = `${lottoTime}초 남음`; if(lottoTime <= 0){ if(myLotto){ if(Math.random()<0.01){ let r=0; if(myLotto.c===5000) r=500000; else if(myLotto.c===10000) r=gameData.clickPower*1000; else r=gameData.currency*10; gameData.currency += r; playSfx('win'); alert(`당첨! ${format(r)}G!`); } else { document.getElementById('lotto-status').innerText = "낙첨..."; setTimeout(()=>document.getElementById('lotto-status').innerText="없음", 3000); } myLotto = null; updateUI(); } lottoTime = 60; } }, 1000);
+    // --- 선거 및 재난지원금 기능 ---
+    function voteElection(choice) {
+        let cost = Math.floor(gameData.currency * 0.03);
+        gameData.currency -= cost;
+        if(Math.random() < 0.5) {
+            alert(`축하합니다! 후원하신 기호 ${choice}번 후보가 당선되었습니다.\n60초 동안 모든 세금이 면제됩니다.`);
+            taxFreeTimer = 60;
+        } else {
+            let fine = Math.floor(gameData.currency * 0.1);
+            gameData.currency -= fine;
+            alert(`후원하신 기호 ${choice}번 후보가 낙선했습니다.\n세무조사 타겟이 되어 재산의 10%(${format(fine)}G)를 압류당했습니다.`);
+        }
+        document.getElementById('election-overlay').style.display = 'none';
+        updateUI();
+    }
 
+    function acceptDisaster() {
+        let relief = gameData.clickPower * 1000;
+        gameData.currency += relief;
+        taxPenaltyTimer = 60;
+        alert(`정부 긴급 재난지원금 ${format(relief)}G가 지급되었습니다.\n대신 60초간 모든 세금이 2배로 인상됩니다.`);
+        document.getElementById('disaster-overlay').style.display = 'none';
+        updateUI();
+    }
+
+    // 초당 오토수익 지급 (0.1초마다 1/10씩)
     setInterval(() => { if (!gameData.isJailed && gameData.autoPower > 0) { gameData.currency += gameData.autoPower / 10; updateUI(); } }, 100);
 </script>
 </body>
