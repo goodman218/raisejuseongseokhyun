@@ -94,9 +94,9 @@
                 - 종부세: 총 부동산 50억 이상 시 60초마다 2% 징수<br>
                 <b>3. 절세의 신 (세무사 효과):</b><br>
                 - 주성/석현 모든 업그레이드 <b>Lv.50 달성 시</b> 모든 세금이 절반으로 감면됩니다!<br>
-                <b>4. 주식/코인 시장:</b><br>
-                - 국장(-40~40%) vs 미장(-80~80%) 단타를 치세요.<br>
-                - 코인은 최대 5배 레버리지 가능. -100% 도달 시 원금 청산됩니다.<br>
+                <b>4. 주식/코인 시장 (8초 갱신):</b><br>
+                - 국장(-30~35%) vs 미장(-45~55%) 단타를 치세요.<br>
+                - 코인은 최대 5배 레버리지 가능(-80~99%). -100% 도달 시 원금 청산됩니다.<br>
                 <b>5. 부동산:</b><br>
                 - 서울 25개 구에 건물을 사서 영구적인 월세를 받으세요. 실시간 매도도 가능합니다.<br>
                 <b style="color:#e74c3c;">6. 인생 한방:</b><br>
@@ -160,11 +160,11 @@
             <div id="tab-upgrade" class="tab-content active"></div>
 
             <div id="tab-market" class="tab-content">
-                <div class="category-title">국내 주식 (-40% ~ +40%)</div>
+                <div class="category-title">국내 주식 (-30% ~ +35%)</div>
                 <div id="market-k"></div>
-                <div class="category-title">미국 주식 (-80% ~ +80%)</div>
+                <div class="category-title">미국 주식 (-45% ~ +55%)</div>
                 <div id="market-us"></div>
-                <div class="category-title">코인 시장 (-50% ~ +100%, 레버리지)</div>
+                <div class="category-title">코인 시장 (-80% ~ +99%, 레버리지)</div>
                 <div id="market-crypto"></div>
             </div>
 
@@ -412,11 +412,12 @@
         return `<div class="card market-item"><div class="item-row"><b>${c.name}</b> <span class="stock-price ${cls}">${format(c.price)} ${c.change>=0?'▲':'▼'} ${Math.abs(c.change)}%</span></div><div style="font-size:0.8em;margin:5px 0;">배수: <button class="lever-btn ${c.lever===1?'active':''}" onclick="setLever('${c.id}',1)">1x</button><button class="lever-btn ${c.lever===3?'active':''}" onclick="setLever('${c.id}',3)">3x</button><button class="lever-btn ${c.lever===5?'active':''}" onclick="setLever('${c.id}',5)">5x</button></div><div style="font-size:0.8em;margin-bottom:5px;">투자: <span class="price-up">${format(c.invested)}G</span></div><div style="display:flex;gap:5px;"><input type="number" id="in-${c.id}" class="stock-input" placeholder="골드"><button class="buy-btn" onclick="tradeCrypto('${c.id}',true)">베팅</button><button class="buy-btn" style="background:#e74c3c" onclick="tradeCrypto('${c.id}',false)">익절</button></div></div>`; 
     }
 
+    // 주식/코인 가격 변동 (8초 주기로 변경 및 수치 변경)
     setInterval(() => { 
-        markets.k.forEach(s => { let ch = (Math.random()*0.8)-0.4; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); 
-        markets.us.forEach(s => { let ch = (Math.random()*1.6)-0.8; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); 
+        markets.k.forEach(s => { let ch = (Math.random()*0.65)-0.30; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); 
+        markets.us.forEach(s => { let ch = (Math.random()*1.00)-0.45; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); 
         markets.crypto.forEach(c => { 
-            let bCh = (Math.random()*1.5)-0.5; let lCh = bCh*c.lever; 
+            let bCh = (Math.random()*1.79)-0.80; let lCh = bCh*c.lever; 
             if(c.invested > 0){ 
                 c.invested = Math.floor(c.invested*(1+lCh)); 
                 if(c.invested <= 0){ 
@@ -427,7 +428,7 @@
             c.price = Math.max(10, Math.floor(c.price*(1+bCh))); c.change = Math.floor(lCh*100); 
         }); 
         if(document.getElementById('tab-market').classList.contains('active')) renderMarkets(); 
-    }, 5000);
+    }, 8000);
 
     function tradeStock(m, id, b) { 
         const s = markets[m].find(x => x.id === id); 
