@@ -92,7 +92,7 @@
             <p style="font-size: 0.9em; line-height: 1.5; color: #333;">
                 파산 위기에 처한 당신을 위해 국가가 나섰습니다.<br>
                 <b>지원금을 수령하시겠습니까?</b><br>
-                <span style="font-size: 0.8em; color: #e74c3c;">(단, 수령 시 60초간 모든 세금이 2배가 됩니다.)</span>
+                <span style="font-size: 0.8em; color: #e74c3c;">(단, 수령 시 60초간 세금 2배, 8분간 재신청 불가, 훗날 <b>3배</b>로 강제 징수됩니다.)</span>
             </p>
             <button class="buy-btn" style="width: 100%; margin-top: 10px;" onclick="acceptDisaster()">수령하기</button>
             <button class="buy-btn" style="width: 100%; margin-top: 5px; background: #95a5a6;" onclick="document.getElementById('disaster-overlay').style.display='none'">거부하기</button>
@@ -134,14 +134,15 @@
                 - 로또: 1% 확률 당첨.<br>
                 <hr style="margin: 10px 0;">
                 <b style="color:#e74c3c;">7. 은행 및 도박:</b><br>
-                - 은행 예금: 이자 지급, 중도해지 시 5% 수수료.<br>
-                - 도박장: 전재산을 건 50% 확률 홀짝 승부.<br>
+                - 안전 은행: 60초마다 이자 지급, 중도해지 시 5% 수수료가 발생합니다.<br>
+                - 불법 도박장: 전재산을 건 50% 확률 홀짝 승부입니다.<br>
                 <b style="color:#e74c3c;">8. 유료 리딩방:</b><br>
-                - 당신께 유용한 주식 정보를 제공합니다.<br>
+                - 당신에게 유용한 정보를 제공합니다.<br>
                 <b style="color:#e74c3c;">9. 국회의원 선거:</b><br>
-                - 당선 시 60초 세금 면제, 낙선 시 세무조사(재산 10% 압류).<br>
-                <b style="color:#e74c3c;">10. 재난지원금 및 기타:</b><br>
-                - 파산 시 지원금 지급 (이후 세금 2배 페널티). 부동산 전세 사기 주의!
+                - 10분마다 등장. 기부 후 당선 시 60초 세금 면제, 낙선 시 세무조사(재산 10% 압류).<br>
+                <b style="color:#e74c3c;">10. 재난지원금 및 이벤트:</b><br>
+                - 파산 시 8분에 한 번 재난지원금을 주지만, 60초간 세금이 2배가 되며 훗날 3배로 강제 추심 당합니다.<br>
+                - 부동산 전세 사기를 주의하세요!
             </div>
             <button class="buy-btn" style="width: 100%; margin-top: 15px; background: #3498db; padding: 10px;" onclick="toggleGuide(false)">확인</button>
         </div>
@@ -291,7 +292,7 @@
                 </div>
                 
                 <div class="card" style="border: 2px solid #f39c12; margin-top:15px;">
-                    <h3>🏦 안전 은행 <span style="font-size:0.7em; color:#f39c12;">(이자 0.5%, 해지 -5%)</span></h3>
+                    <h3>🏦 안전 은행 <span style="font-size:0.7em; color:#f39c12;">(이자 0.5~1%, 해지 -5%)</span></h3>
                     <p style="font-size: 0.8em; color: #666; margin-bottom: 5px;">현재 예금: <span id="bank-val" style="font-weight:bold; color:#2c3e50;">0</span>G</p>
                     <div style="display:flex; gap:5px;">
                         <input type="number" id="in-bank" class="stock-input" placeholder="골드">
@@ -338,8 +339,12 @@
 
     let gameData = { currency: 0, clickPower: 1, autoPower: 0, isJailed: false, bank: 0 };
     let seokDeg = 0;
-    let taxPenaltyTimer = 0; // 재난지원금 등 페널티
-    let taxFreeTimer = 0; // 선거 당선 등 혜택
+    
+    // 이벤트 타이머 및 변수
+    let taxFreeTimer = 0;
+    let taxPenaltyTimer = 0;  // 특별증세 2배
+    let disasterCooldown = 0; // 8분 (480초)
+    let nationalDebt = 0;     // 재난지원금 3배 강제 회수용
 
     let upgrades = [
         { id: 'j1', category: 'juseong', name: "저세상 팔굽혀펴기", target: "click", power: 1, baseCost: 50, level: 0, desc: "클릭당 골드 +1" },
@@ -403,31 +408,45 @@
     let bankTimer = 60;
     let electionTimer = 600;
 
-    const newsList = ["찌라시: 주성이와 석현이 불화설 제기", "현재 한강 물 온도: 4.2°C... 아직은 춥습니다.", "국세청, 개미 투자자 대상 세무조사 예고", "리딩방 피해자 속출... '믿었는데 다 잃어'", "선거철 기부금 논란... '투자금인지 뒷돈인지'"];
+    const newsList = [
+        "찌라시: 주성이와 석현이 불화설 제기", 
+        "현재 한강 물 온도: 4.2°C... 아직은 춥습니다.", 
+        "국세청, 개미 투자자 대상 세무조사 예고", 
+        "리딩방 피해자 속출... '믿었는데 다 잃어'", 
+        "선거철 기부금 논란... '투자금인지 뒷돈인지'",
+        "찌라시: 정부, 코인 시장 규제 완화 검토 중?"
+    ];
 
     function format(num) { return Math.floor(num).toLocaleString('ko-KR'); }
     function checkAccountant() { return upgrades.every(u => u.level >= 50); }
     function getTaxRate(baseRate) { 
         if(taxFreeTimer > 0) return 0;
         let rate = checkAccountant() ? baseRate / 2 : baseRate; 
-        if(taxPenaltyTimer > 0) rate *= 2;
+        if(taxPenaltyTimer > 0) rate *= 2; // 특별증세 적용
         return rate;
     }
 
     function updateUI() { 
         if(gameData.isJailed) return; 
+
+        // [버그 픽스] 클릭당 골드 파워 동적 재계산
+        let effectiveClick = 1 + upgrades.filter(u=>u.target==='click').reduce((sum,u)=>sum+(u.level*u.power), 0);
+        gameData.clickPower = effectiveClick;
+        
+        // 초당 골드 파워 동적 재계산
+        let effectiveAuto = upgrades.filter(u=>u.target==='auto').reduce((sum,u)=>sum+(u.level*u.power), 0);
+        realEstate.filter(e=>e.owned && e.scamTimer <= 0).forEach(e=>effectiveAuto += e.rent);
+        gameData.autoPower = effectiveAuto;
+
         document.getElementById('currency-display').innerText = format(gameData.currency); 
         document.getElementById('gps-display').innerText = format(gameData.autoPower); 
         document.getElementById('cpc-display').innerText = format(gameData.clickPower); 
         document.getElementById('bank-val').innerText = format(gameData.bank);
+        
         upgrades.forEach(u => { 
             const btn = document.getElementById(`btn-${u.id}`); 
             if(btn) btn.disabled = gameData.currency < Math.floor(u.baseCost * Math.pow(1.15, u.level)); 
         }); 
-        
-        let effectiveAuto = upgrades.filter(u=>u.target==='auto').reduce((sum,u)=>sum+(u.level*u.power), 0);
-        realEstate.filter(e=>e.owned && e.scamTimer <= 0).forEach(e=>effectiveAuto += e.rent);
-        gameData.autoPower = effectiveAuto;
     }
     
     function showPrologue() { initAudio(); document.getElementById('start-screen').classList.remove('active'); document.getElementById('prologue-screen').classList.add('active'); }
@@ -477,6 +496,7 @@
             updateUI(); 
         } 
     }
+    
     function renderUpgrades() { 
         const l = document.getElementById('tab-upgrade'); 
         l.innerHTML = '<div class="category-title">주성이 키우기 (클릭 골드 UP)</div>'; 
@@ -511,23 +531,35 @@
 
     // 8초 시장 갱신 및 전광판 로직
     setInterval(() => { 
-        // 국장: -30% ~ +35%
-        markets.k.forEach(s => { let ch = (Math.random()*0.65)-0.30; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); 
+        // 국장: -30% ~ +35% (정수형 계산으로 깔끔하게 처리)
+        markets.k.forEach(s => { 
+            let percent = Math.floor(Math.random() * 66) - 30;
+            s.price = Math.max(10, Math.floor(s.price * (1 + (percent/100)))); 
+            s.change = percent; 
+        }); 
+        
         // 미장: -45% ~ +55%
-        markets.us.forEach(s => { let ch = (Math.random()*1.00)-0.45; s.price = Math.max(10, Math.floor(s.price*(1+ch))); s.change = Math.floor(ch*100); }); 
-        // 코인: 시세는 -80% ~ +99% 고정. 레버리지는 수익금에만 반영.
+        markets.us.forEach(s => { 
+            let percent = Math.floor(Math.random() * 101) - 45; 
+            s.price = Math.max(10, Math.floor(s.price * (1 + (percent/100)))); 
+            s.change = percent; 
+        }); 
+        
+        // 코인: 시세는 -80% ~ +99% 고정. 레버리지는 투자 수익금에만 반영.
         markets.crypto.forEach(c => { 
-            let bCh = (Math.random()*1.79)-0.80; // 베이스 변동
+            let percent = Math.floor(Math.random() * 180) - 80; // 베이스 변동 (-80 ~ +99)
+            let bCh = percent / 100;
             let lCh = bCh * c.lever; // 레버리지 적용 변동 (계좌용)
+            
             if(c.invested > 0){ 
                 c.invested = Math.floor(c.invested * (1 + lCh)); 
                 if(c.invested <= 0){ 
                     c.invested = 0; 
-                    alert(`🚨 [청산] ${c.name} 투자금이 증발했습니다.`); 
+                    alert(`🚨 [청산] ${c.name} 레버리지 변동성으로 인해 투자금이 증발했습니다.`); 
                 } 
             } 
             c.price = Math.max(10, Math.floor(c.price * (1 + bCh))); 
-            c.change = Math.floor(bCh * 100); 
+            c.change = percent; 
         }); 
         
         document.getElementById('ticker').innerText = newsList[Math.floor(Math.random()*newsList.length)];
@@ -559,8 +591,8 @@
             let a = parseInt(document.getElementById(`in-${id}`).value); 
             if(a > 0 && gameData.currency >= a){ gameData.currency -= a; c.invested += a; } 
         } else { 
-            let profit = c.invested; // (간단화: 원금 포함 전체 금액에서 차익만큼 금투세 징수를 위해선 별도 원금 기록 필요하나, 편의상 전액 출금)
-            let tax = profit > 0 ? Math.floor(profit * 0.1 * getTaxRate(0.22)) : 0; // 임의 과세 적용
+            let profit = c.invested; 
+            let tax = profit > 0 ? Math.floor(profit * 0.1 * getTaxRate(0.22)) : 0; 
             gameData.currency += (c.invested - tax); 
             c.invested = 0; 
             if(tax > 0) alert(`[금투세 납부] 수익 세금 ${format(tax)}G 징수.`);
@@ -667,9 +699,10 @@
     function buyReading() {
         if(gameData.currency >= 100000) {
             gameData.currency -= 100000;
-            let target = markets.crypto[Math.floor(Math.random()*markets.crypto.length)].name;
-            let msg = Math.random() < 0.2 ? "떡상합니다!" : "폭락합니다!"; // 사실 대부분 낚시
-            document.getElementById('reading-info').innerText = `[비밀정보] 다음 턴에 ${target} 코인이 ${msg}`;
+            let targetIdx = Math.floor(Math.random() * markets.crypto.length);
+            let target = markets.crypto[targetIdx].name;
+            let msg = Math.random() < 0.5 ? "떡상합니다!" : "폭락합니다!"; 
+            document.getElementById('reading-info').innerText = `[비밀정보] 다음 턴에 ${target} 코인이 ${msg} (적중률 20%)`;
             updateUI();
         } else {
             alert("가입비(10만G)가 부족합니다.");
@@ -679,7 +712,7 @@
     function commitSuicide() {
         if(confirm("정말로 모든 것을 포기하시겠습니까? (전체 데이터 초기화)")) {
             alert(`당신은 차가운 한강 물속으로 뛰어들었습니다...\n남겨진 자산: ${format(gameData.currency)}G\n당신의 이름은 다음 날 신문 사회면 구석에 한 줄로 기록되었습니다.`);
-            location.reload(); // 심플한 초기화
+            location.reload(); 
         }
     }
 
@@ -733,16 +766,33 @@
             electionTimer = 600;
         }
 
+        // 재난지원금 쿨타임 감소
+        if(disasterCooldown > 0) disasterCooldown--;
+
         // 재난지원금 체크 (10초마다 체크)
-        if(electionTimer % 10 === 0 && gameData.currency < 1000) {
+        if(electionTimer % 10 === 0 && gameData.currency < 1000 && disasterCooldown <= 0 && nationalDebt <= 0) {
             if(Math.random() < 0.2 && document.getElementById('disaster-overlay').style.display !== 'flex') {
                 document.getElementById('disaster-overlay').style.display = 'flex';
             }
         }
 
-        // 페널티 및 혜택 타이머 감소
-        if(taxPenaltyTimer > 0) { taxPenaltyTimer--; document.getElementById('ticker').innerText = `🚨 특별 증세 기간: 모든 세금 2배 (${taxPenaltyTimer}초)`; }
-        if(taxFreeTimer > 0) { taxFreeTimer--; document.getElementById('ticker').innerText = `⭐ 선거 당선 효과: 세금 면제 (${taxFreeTimer}초)`; }
+        // 재난지원금 강제 징수 (국세청의 추심)
+        if(nationalDebt > 0 && gameData.currency >= nationalDebt) {
+            gameData.currency -= nationalDebt;
+            let paid = nationalDebt;
+            nationalDebt = 0;
+            alert(`🚨 [국세청 추심] 예전 재난지원금 상환을 위해 ${format(paid)}G가 강제 징수되었습니다.`);
+            updateUI();
+        }
+
+        // 페널티 및 혜택 전광판 갱신
+        if(taxPenaltyTimer > 0) { 
+            taxPenaltyTimer--; 
+            document.getElementById('ticker').innerText = `🚨 특별 증세 기간: 모든 세금 2배 (${taxPenaltyTimer}초 남음)`; 
+        } else if(taxFreeTimer > 0) { 
+            taxFreeTimer--; 
+            document.getElementById('ticker').innerText = `⭐ 선거 당선 효과: 세금 면제 (${taxFreeTimer}초 남음)`; 
+        }
         
         // 부동산 사기 타이머 감소
         realEstate.forEach(e => {
@@ -773,8 +823,10 @@
     function acceptDisaster() {
         let relief = gameData.clickPower * 1000;
         gameData.currency += relief;
-        taxPenaltyTimer = 60;
-        alert(`정부 긴급 재난지원금 ${format(relief)}G가 지급되었습니다.\n대신 60초간 모든 세금이 2배로 인상됩니다.`);
+        disasterCooldown = 480; // 8분 쿨타임
+        nationalDebt = relief * 3; // 3배 빚
+        taxPenaltyTimer = 60; // 특별증세 60초
+        alert(`정부 긴급 재난지원금 ${format(relief)}G가 지급되었습니다.\n대신 60초간 모든 세금이 2배로 인상되며, 훗날 3배(${format(nationalDebt)}G)로 강제 징수됩니다.`);
         document.getElementById('disaster-overlay').style.display = 'none';
         updateUI();
     }
